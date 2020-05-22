@@ -148,6 +148,39 @@ namespace IO {
                     return PinState::High;
                 return PinState::Low;
             }
+
+            template<class ClockPin>
+            inline uint8_t shift_in(DigitalOutBase<ClockPin> clockPin, BitOrder bitOrder) {
+                // Having the redundant loop ends up being faster due to less branching inside the loop.
+                uint8_t value = 0;
+                if (bitOrder == BitOrder::LSBFirst) {
+                    uint8_t bit = 0x1;
+                    for (uint8_t i = 0; i < 8; i++) {
+                        clockPin.toggle();
+
+                        if (this->read() == PinState::High) {
+                            value |= bit;
+                        }
+
+                        clockPin.toggle();
+                        bit <<= 1;
+                    }
+                } else {
+                    uint8_t bit = 0x80;
+                    for (uint8_t i = 0; i < 8; i++) {
+                        clockPin.toggle();
+
+                        if (this->read() == PinState::High) {
+                            value |= bit;
+                        }
+
+                        clockPin.toggle();
+                        bit >>= 1;
+                    }
+                }
+
+                return value;
+            }
     };
 
     template<typename Pin, typename Mode = NoPullup, class=void>
