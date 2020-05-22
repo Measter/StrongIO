@@ -208,7 +208,7 @@ namespace IO {
 
     template<typename Pin>
     class AnalogInBase {
-        static_assert(is_analog<Pin>::value, "AnalogIn can only be used with an analog pin");
+        static_assert(is_analog_adc<Pin>::value, "AnalogIn can only be used with an analog pin");
         protected:
             inline AnalogInBase() {}
         public:

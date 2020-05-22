@@ -184,7 +184,7 @@ namespace Pin {
 
     class A0 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC0;
             static constexpr uint8_t id = 14;
@@ -193,7 +193,7 @@ namespace Pin {
 
     class A1 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC1;
             static constexpr uint8_t id = 15;
@@ -202,7 +202,7 @@ namespace Pin {
 
     class A2 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC2;
             static constexpr uint8_t id = 16;
@@ -211,7 +211,7 @@ namespace Pin {
 
     class A3 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC3;
             static constexpr uint8_t id = 17;
@@ -220,7 +220,7 @@ namespace Pin {
 
     class A4 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC4;
             static constexpr uint8_t id = 18;
@@ -229,7 +229,7 @@ namespace Pin {
 
     class A5 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC5;
             static constexpr uint8_t id = 19;
@@ -238,14 +238,14 @@ namespace Pin {
 
     class A6 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             static constexpr uint8_t id = 20;
             static constexpr uint8_t analog_channel = 6;
     };
 
     class A7 {
         public:
-            using Analog = void;
+            using AnalogConv = void;
             static constexpr uint8_t id = 21;
             static constexpr uint8_t analog_channel = 7;
     };

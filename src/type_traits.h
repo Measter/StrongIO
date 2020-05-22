@@ -49,13 +49,13 @@ template<class T>
 struct has_timer<T, void_t<typename T::Timer>> : true_type {};
 
 ///////////////////
-/// Analog Requirement
+/// AnalogConv Requirement
 ///////////////////
 
 template<class T, class=void>
-struct is_analog : false_type {};
+struct is_analog_adc : false_type {};
 
 template<class T>
-struct is_analog<T, void_t<typename T::Analog>> : true_type {};
+struct is_analog_adc<T, void_t<typename T::AnalogConv>> : true_type {};
 
 #endif // STRONG_IO_TRAITS_H
