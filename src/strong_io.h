@@ -70,31 +70,30 @@ namespace IO {
             template<class ClockPin>
             inline void shift_out(DigitalOutBase<ClockPin>& clockPin, BitOrder bitOrder, uint8_t value) {
                 static_assert(is_digital<ClockPin>::value, "clockPin must be a DigitalOut");
-                // Having the redundant loop cuts the execution time in half.
+                // Having the redundant loop is more faster because there's less branching
+                // inside the loop.
                 if (bitOrder == BitOrder::LSBFirst) {
-                    uint8_t bit = 0x01;
                     for (uint8_t i = 0; i < 8; i++) {
-                        if (value & bit)
+                        if (value & 0x1)
                             this->set_high();
                         else
                             this->set_low();
                         
                         clockPin.toggle();
                         clockPin.toggle();
-                        bit <<= 1;
+                        value >>= 1;
                     }
                 }
                 else {
-                    uint8_t bit = 0x80;
                     for (uint8_t i = 0; i < 8; i++) {
-                        if (value & bit)
+                        if (value & 0x80)
                             this->set_high();
                         else
                             this->set_low();
                         
                         clockPin.toggle();
                         clockPin.toggle();
-                        bit >>= 1;
+                        value <<= 1;
                     }
                 }
             }
