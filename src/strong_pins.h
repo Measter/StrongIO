@@ -5,71 +5,71 @@ namespace Pin {
     namespace Ports {
         class PortB {
             public:
-                static constexpr volatile uint8_t* mode_register = &DDRB;
-                static constexpr volatile uint8_t* output_register = &PORTB;
-                static constexpr volatile uint8_t* input_register = &PINB;
+                volatile uint8_t* mode_register = &DDRB;
+                volatile uint8_t* output_register = &PORTB;
+                volatile uint8_t* input_register = &PINB;
         };
 
         class PortC {
             public:
-                static constexpr volatile uint8_t* mode_register = &DDRC;
-                static constexpr volatile uint8_t* output_register = &PORTC;
-                static constexpr volatile uint8_t* input_register = &PINC;
+                volatile uint8_t* mode_register = &DDRC;
+                volatile uint8_t* output_register = &PORTC;
+                volatile uint8_t* input_register = &PINC;
         };
 
         class PortD {
             public:
-                static constexpr volatile uint8_t* mode_register = &DDRD;
-                static constexpr volatile uint8_t* output_register = &PORTD;
-                static constexpr volatile uint8_t* input_register = &PIND;
+                volatile uint8_t* mode_register = &DDRD;
+                volatile uint8_t* output_register = &PORTD;
+                volatile uint8_t* input_register = &PIND;
         };
     }
 
     namespace Timers {
         class Timer0A {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR0A;
-                static constexpr volatile uint8_t* compare_register = &OCR0A;
+                volatile uint8_t* control_register = &TCCR0A;
+                volatile uint8_t* compare_register = &OCR0A;
                 static constexpr uint8_t mode_bit0 = 1 << 6;
                 static constexpr uint8_t mode_bit1 = 1 << 7;
         };
 
         class Timer0B {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR0A;
-                static constexpr volatile uint8_t* compare_register = &OCR0B;
+                volatile uint8_t* control_register = &TCCR0A;
+                volatile uint8_t* compare_register = &OCR0B;
                 static constexpr uint8_t mode_bit0 = 1 << 4;
                 static constexpr uint8_t mode_bit1 = 1 << 5;
         };
 
         class Timer1A {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR1A;
-                static constexpr volatile uint8_t* compare_register = &OCR1AL;
+                volatile uint8_t* control_register = &TCCR1A;
+                volatile uint8_t* compare_register = &OCR1AL;
                 static constexpr uint8_t mode_bit0 = 1 << 6;
                 static constexpr uint8_t mode_bit1 = 1 << 7;
         };
 
         class Timer1B {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR1A;
-                static constexpr volatile uint8_t* compare_register = &OCR1BL;
+                volatile uint8_t* control_register = &TCCR1A;
+                volatile uint8_t* compare_register = &OCR1BL;
                 static constexpr uint8_t mode_bit0 = 1 << 4;
                 static constexpr uint8_t mode_bit1 = 1 << 5;
         };
 
         class Timer2A {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR2A;
-                static constexpr volatile uint8_t* compare_register = &OCR2A;
+                volatile uint8_t* control_register = &TCCR2A;
+                volatile uint8_t* compare_register = &OCR2A;
                 static constexpr uint8_t mode_bit0 = 1 << 6;
                 static constexpr uint8_t mode_bit1 = 1 << 7;
         };
 
         class Timer2B {
             public:
-                static constexpr volatile uint8_t* control_register = &TCCR2A;
-                static constexpr volatile uint8_t* compare_register = &OCR2B;
+                volatile uint8_t* control_register = &TCCR2A;
+                volatile uint8_t* compare_register = &OCR2B;
                 static constexpr uint8_t mode_bit0 = 1 << 4;
                 static constexpr uint8_t mode_bit1 = 1 << 5;
         };

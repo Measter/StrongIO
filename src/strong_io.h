@@ -41,13 +41,15 @@ namespace IO {
         protected:
             inline DigitalOutBase() {}
             inline void inner_init() {
-                *Pin::Port::mode_register |= Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.mode_register |= Pin::digital_pin_bit;
                 // Datasheet says there should be a NOP after configuring the pin for syncronization.
                 __asm__ volatile ("nop");
             }
         public:
             inline void toggle() {
-                *Pin::Port::input_register |= Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.input_register |= Pin::digital_pin_bit;
             }
 
             inline void write(PinState state) {
@@ -60,11 +62,13 @@ namespace IO {
             }
 
             inline void set_high() {
-                *Pin::Port::output_register |= Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.output_register |= Pin::digital_pin_bit;
             }
 
             inline void set_low() {
-                *Pin::Port::output_register &= ~Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.output_register &= ~Pin::digital_pin_bit;
             }
 
             template<class ClockPin>
@@ -111,8 +115,9 @@ namespace IO {
     class DigitalOut<Pin, typename enable_if<has_timer<Pin>::value>::type> : public DigitalOutBase<Pin> {
         public:
             inline DigitalOut() {
+                typename Pin::Timer t;
                 // Make sure PWM is disabled.
-                *Pin::Timer::control_register &= ~Pin::Timer::mode_bit1;
+                *t.control_register &= ~Pin::Timer::mode_bit1;
 
                 this->inner_init();
             }
@@ -125,19 +130,21 @@ namespace IO {
         protected: 
             inline DigitalInBase() {}
             inline void inner_init() {
-                *Pin::Port::mode_register &= ~Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.mode_register &= ~Pin::digital_pin_bit;
 
                 if (Mode::is_pullup)
-                    *Pin::Port::output_register |= Pin::digital_pin_bit;
+                    *port.output_register |= Pin::digital_pin_bit;
                 else
-                    *Pin::Port::output_register &= ~Pin::digital_pin_bit;
+                    *port.output_register &= ~Pin::digital_pin_bit;
 
                 // Datasheet says there should be a NOP after configuring the pin.
                 __asm__ volatile ("nop");
             }
         public:
             inline PinState read() {
-                if ((*Pin::Port::input_register & Pin::digital_pin_bit) != 0)
+                typename Pin::Port port;
+                if ((*port.input_register & Pin::digital_pin_bit) != 0)
                     return PinState::High;
                 return PinState::Low;
             }
@@ -156,7 +163,8 @@ namespace IO {
         public:
             inline DigitalIn() {
                 // Make sure PWM is disabled.
-                *Pin::Timer::control_register &= ~Pin::Timer::mode_bit1;
+                typename Pin::Timer t;
+                *t.control_register &= ~Pin::Timer::mode_bit1;
 
                 this->inner_init();
             }
@@ -211,8 +219,9 @@ namespace IO {
         public:
             inline AnalogIn() {
                 // Reset pin to tri-state.
-                *Pin::Port::mode_register &= ~Pin::digital_pin_bit;
-                *Pin::Port::output_register &= ~Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.mode_register &= ~Pin::digital_pin_bit;
+                *port.output_register &= ~Pin::digital_pin_bit;
 
                 // Datasheet says there should be a NOP after configuring the pin.
                 __asm__ volatile ("nop");
@@ -226,7 +235,8 @@ namespace IO {
         public:
             inline PWM() {
                 // First configure the pin to output.
-                *Pin::Port::mode_register |= Pin::digital_pin_bit;
+                typename Pin::Port port;
+                *port.mode_register |= Pin::digital_pin_bit;
                 // Datasheet says there should be a NOP after configuring the pin for syncronization.
                 __asm__ volatile ("nop");
 
@@ -236,17 +246,19 @@ namespace IO {
             }
 
             void set_duty(uint8_t duty) {
+                typename Pin::Port port;
+                typename Pin::Timer t;
                 if (duty == 0) {
                     // Disable timer.
-                    *Pin::Timer::control_register &= ~Pin::Timer::mode_bit1;
-                    *Pin::Port::output_register &= ~Pin::digital_pin_bit;
+                    *t.control_register &= ~Pin::Timer::mode_bit1;
+                    *port.output_register &= ~Pin::digital_pin_bit;
                 } else if (duty == 255) {
                     // Disable timer.
-                    *Pin::Timer::control_register &= ~Pin::Timer::mode_bit1;
-                    *Pin::Port::output_register |= Pin::digital_pin_bit;
+                    *t.control_register &= ~Pin::Timer::mode_bit1;
+                    *port.output_register |= Pin::digital_pin_bit;
                 } else {
-                    *Pin::Timer::control_register |= Pin::Timer::mode_bit1;
-                    *Pin::Timer::compare_register = duty;
+                    *t.control_register |= Pin::Timer::mode_bit1;
+                    *t.compare_register = duty;
                 }
             }
     };
