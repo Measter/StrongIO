@@ -280,18 +280,19 @@ namespace IO {
 
             void set_duty(uint8_t duty) {
                 typename Pin::Port port;
-                typename Pin::Timer t;
+                typename Pin::Timer channel;
+                typename Pin::Timer::Timer timer;
                 if (duty == 0) {
                     // Disable timer.
-                    *t.control_register &= ~Pin::Timer::mode_bit1;
+                    *timer.control_a &= ~Pin::Timer::mode_bit1;
                     *port.output_register &= ~Pin::digital_pin_bit;
                 } else if (duty == 255) {
                     // Disable timer.
-                    *t.control_register &= ~Pin::Timer::mode_bit1;
+                    *timer.control_a &= ~Pin::Timer::mode_bit1;
                     *port.output_register |= Pin::digital_pin_bit;
                 } else {
-                    *t.control_register |= Pin::Timer::mode_bit1;
-                    *t.compare_register = duty;
+                    *timer.control_a |= Pin::Timer::mode_bit1;
+                    *channel.output_compare = duty;
                 }
             }
     };

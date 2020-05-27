@@ -26,52 +26,86 @@ namespace Pin {
     }
 
     namespace Timers {
-        class Timer0A {
+        class Timer0 {
             public:
-                volatile uint8_t* control_register = &TCCR0A;
-                volatile uint8_t* compare_register = &OCR0A;
-                static constexpr uint8_t mode_bit0 = 1 << 6;
-                static constexpr uint8_t mode_bit1 = 1 << 7;
+                volatile uint8_t* control_a = &TCCR0A;
+                volatile uint8_t* control_b = &TCCR0B;
+                volatile uint8_t* interrupt_mask = &TIMSK0;
+                volatile uint8_t* interupt_flag = &TIFR0;
+                volatile uint8_t* counter_value = &TCNT0;
         };
 
-        class Timer0B {
+        class Timer1 {
             public:
-                volatile uint8_t* control_register = &TCCR0A;
-                volatile uint8_t* compare_register = &OCR0B;
-                static constexpr uint8_t mode_bit0 = 1 << 4;
-                static constexpr uint8_t mode_bit1 = 1 << 5;
+                volatile uint8_t* control_a = &TCCR1A;
+                volatile uint8_t* control_b = &TCCR1B;
+                volatile uint8_t* interrupt_mask = &TIMSK1;
+                volatile uint8_t* interupt_flag = &TIFR1;
+                volatile uint8_t* counter_value = &TCNT1L;
+                volatile uint8_t* counter_value_high = &TCNT1H;
+                volatile uint8_t* input_capture = &ICR1L;
+                volatile uint8_t* input_capture_high = &ICR1H;
         };
 
-        class Timer1A {
+        class Timer2 {
             public:
-                volatile uint8_t* control_register = &TCCR1A;
-                volatile uint8_t* compare_register = &OCR1AL;
-                static constexpr uint8_t mode_bit0 = 1 << 6;
-                static constexpr uint8_t mode_bit1 = 1 << 7;
+                volatile uint8_t* control_a = &TCCR2A;
+                volatile uint8_t* control_b = &TCCR2B;
+                volatile uint8_t* interrupt_mask = &TIMSK2;
+                volatile uint8_t* interupt_flag = &TIFR2;
+                volatile uint8_t* counter_value = &TCNT2;
         };
 
-        class Timer1B {
+        class Timer0ChannelA {
             public:
-                volatile uint8_t* control_register = &TCCR1A;
-                volatile uint8_t* compare_register = &OCR1BL;
-                static constexpr uint8_t mode_bit0 = 1 << 4;
-                static constexpr uint8_t mode_bit1 = 1 << 5;
+                using Timer = Timer0;
+                volatile uint8_t* output_compare = &OCR0A;
+                static constexpr uint8_t mode_bit0 = 1 << COM0A0;
+                static constexpr uint8_t mode_bit1 = 1 << COM0A1;
         };
 
-        class Timer2A {
+        class Timer0ChannelB {
             public:
-                volatile uint8_t* control_register = &TCCR2A;
-                volatile uint8_t* compare_register = &OCR2A;
-                static constexpr uint8_t mode_bit0 = 1 << 6;
-                static constexpr uint8_t mode_bit1 = 1 << 7;
+                using Timer = Timer0;
+                volatile uint8_t* output_compare = &OCR0B;
+                static constexpr uint8_t mode_bit0 = 1 << COM0B0;
+                static constexpr uint8_t mode_bit1 = 1 << COM0B1;
         };
 
-        class Timer2B {
+        class Timer1ChannelA {
             public:
-                volatile uint8_t* control_register = &TCCR2A;
-                volatile uint8_t* compare_register = &OCR2B;
-                static constexpr uint8_t mode_bit0 = 1 << 4;
-                static constexpr uint8_t mode_bit1 = 1 << 5;
+                using Timer = Timer1;
+                volatile uint8_t* output_compare = &OCR1AL;
+                volatile uint8_t* output_compare_high = &OCR1AH;
+                static constexpr uint8_t mode_bit0 = 1 << COM1A0;
+                static constexpr uint8_t mode_bit1 = 1 << COM1A1;
+        };
+
+        class Timer1ChannelB {
+            public:
+                using Timer = Timer1;
+                volatile uint8_t* output_compare = &OCR1BL;
+                volatile uint8_t* output_compare_high = &OCR1BH;
+                static constexpr uint8_t mode_bit0 = 1 << COM1B0;
+                static constexpr uint8_t mode_bit1 = 1 << COM1B1;
+        };
+
+        class Timer2ChannelA {
+            public:
+                using Timer = Timer2;
+                volatile uint8_t* output_compare = &OCR2A;
+                static constexpr uint8_t mode_bit0 = 1 << COM2A0;
+                static constexpr uint8_t mode_bit1 = 1 << COM2A1;
+                static constexpr uint8_t output_compare_enable_bit = 1 << OCIE2A;
+        };
+
+        class Timer2ChannelB {
+            public:
+                using Timer = Timer2;
+                volatile uint8_t* output_compare = &OCR2B;
+                static constexpr uint8_t mode_bit0 = 1 << COM2B0;
+                static constexpr uint8_t mode_bit1 = 1 << COM2B1;
+                static constexpr uint8_t output_compare_enable_bit = 1 << OCIE2B;
         };
     }
 
@@ -99,7 +133,7 @@ namespace Pin {
     class D3 {
         public:
             using Port = Ports::PortD;
-            using Timer = Timers::Timer2B;
+            using Timer = Timers::Timer2ChannelB;
             static constexpr uint8_t digital_pin_bit = 1<<PD3;
             static constexpr uint8_t id = 3;
     };
@@ -114,7 +148,7 @@ namespace Pin {
     class D5 {
         public:
             using Port = Ports::PortD;
-            using Timer = Timers::Timer0B;
+            using Timer = Timers::Timer0ChannelB;
             static constexpr uint8_t digital_pin_bit = 1<<PD5;
             static constexpr uint8_t id = 5;
     };
@@ -122,7 +156,7 @@ namespace Pin {
     class D6 {
         public:
             using Port = Ports::PortD;
-            using Timer = Timers::Timer0A;
+            using Timer = Timers::Timer0ChannelA;
             static constexpr uint8_t digital_pin_bit = 1<<PD6;
             static constexpr uint8_t id = 6;
     };
@@ -145,7 +179,7 @@ namespace Pin {
     class D9 {
         public:
             using Port = Ports::PortB;
-            using Timer = Timers::Timer1A;
+            using Timer = Timers::Timer1ChannelA;
             static constexpr uint8_t digital_pin_bit = 1<<PB1;
             static constexpr uint8_t id = 9;
     };
@@ -153,7 +187,7 @@ namespace Pin {
     class D10 {
         public:
             using Port = Ports::PortB;
-            using Timer = Timers::Timer1B;
+            using Timer = Timers::Timer1ChannelB;
             static constexpr uint8_t digital_pin_bit = 1<<PB2;
             static constexpr uint8_t id = 10;
     };
@@ -161,7 +195,7 @@ namespace Pin {
     class D11 {
         public:
             using Port = Ports::PortB;
-            using Timer = Timers::Timer2A;
+            using Timer = Timers::Timer2ChannelA;
             static constexpr uint8_t digital_pin_bit = 1<<PB3;
             static constexpr uint8_t id = 11;
     };
