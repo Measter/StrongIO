@@ -113,6 +113,7 @@ namespace Pin {
         public:
             volatile uint8_t* adc_control_register = &ADCSRB;
             volatile uint8_t* comp_control_register = &ACSR;
+            volatile uint8_t* digital_disable_register = &DIDR1;
     };
 
     class D0 {
