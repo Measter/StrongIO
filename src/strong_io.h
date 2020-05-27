@@ -296,6 +296,25 @@ namespace IO {
                 }
             }
     };
+
+    template<typename Positive, typename Negative>
+    class AnalogComp {
+        static_assert(is_analog_ac_positive<Positive>::value, "Analog Comparitor positive pin must be AIN0");
+        static_assert(is_analog_ac_negative<Negative>::value, "Analog Comparitor negative pin must be AIN1");
+        public:
+            inline AnalogComp() {
+                // Set both pins to input, no pullup.
+                // On the 328P and 2560 these are both on the same port, so do both pins in one operation.
+                typename Positive::Port port;
+                *port.mode_register &= ~(Positive::digital_pin_bit | Negative::digital_pin_bit);
+                *port.output_register &= ~(Positive::digital_pin_bit | Negative::digital_pin_bit);
+            }
+
+            inline bool is_positive_higher() {
+                typename Positive::AnalogCompPositive comp;
+                return (*comp.comp_control_register & (1<<ACO)) != 0;
+            }
+    };
 }
 
 #endif //STRONG_IO_H

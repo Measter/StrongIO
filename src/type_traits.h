@@ -58,4 +58,20 @@ struct is_analog_adc : false_type {};
 template<class T>
 struct is_analog_adc<T, void_t<typename T::AnalogConv>> : true_type {};
 
+///////////////////
+/// AnalogComp Requirement
+///////////////////
+
+template<class T, class=void>
+struct is_analog_ac_positive : false_type {};
+
+template<class T>
+struct is_analog_ac_positive<T, void_t<typename T::AnalogCompPositive>> : true_type {};
+
+template<class T, class=void>
+struct is_analog_ac_negative : false_type {};
+
+template<class T>
+struct is_analog_ac_negative<T, void_t<typename T::AnalogCompNegative>> : true_type {};
+
 #endif // STRONG_IO_TRAITS_H

@@ -109,6 +109,12 @@ namespace Pin {
         };
     }
 
+    class AnalogComparitor {
+        public:
+            volatile uint8_t* adc_control_register = &ADCSRB;
+            volatile uint8_t* comp_control_register = &ACSR;
+    };
+
     class D0 {
         public:
             using Port = Ports::PortD;
@@ -157,6 +163,7 @@ namespace Pin {
         public:
             using Port = Ports::PortD;
             using Timer = Timers::Timer0ChannelA;
+            using AnalogCompPositive = AnalogComparitor;
             static constexpr uint8_t digital_pin_bit = 1<<PD6;
             static constexpr uint8_t id = 6;
     };
@@ -164,6 +171,7 @@ namespace Pin {
     class D7 {
         public:
             using Port = Ports::PortD;
+            using AnalogCompNegative = AnalogComparitor;
             static constexpr uint8_t digital_pin_bit = 1<<PD7;
             static constexpr uint8_t id = 7;
     };
