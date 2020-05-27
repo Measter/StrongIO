@@ -115,9 +115,9 @@ namespace IO {
     class DigitalOut<Pin, typename enable_if<has_timer<Pin>::value>::type> : public DigitalOutBase<Pin> {
         public:
             inline DigitalOut() {
-                typename Pin::Timer t;
+                typename Pin::Timer::Timer timer;
                 // Make sure PWM is disabled.
-                *t.control_register &= ~Pin::Timer::mode_bit1;
+                *timer.control_a &= ~Pin::Timer::mode_bit1;
 
                 this->inner_init();
             }
@@ -278,7 +278,7 @@ namespace IO {
                 // it based on whether the input is 0, 255, or between.
             }
 
-            void set_duty(uint8_t duty) {
+            inline void set_duty(uint8_t duty) {
                 typename Pin::Port port;
                 typename Pin::Timer channel;
                 typename Pin::Timer::Timer timer;
