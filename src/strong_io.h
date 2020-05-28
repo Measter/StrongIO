@@ -196,8 +196,8 @@ namespace IO {
         public:
             inline DigitalIn() {
                 // Make sure PWM is disabled.
-                typename Pin::Timer t;
-                *t.control_register &= ~Pin::Timer::mode_bit1;
+                typename Pin::Timer::Timer timer;
+                *timer.control_a &= ~Pin::Timer::mode_bit1;
 
                 this->inner_init();
             }
