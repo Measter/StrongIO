@@ -24,7 +24,7 @@ Configuring a pin is as simple as declaring an IO type with the pin (e.g. `IO::D
 ## Timing and Code Size Test
 
 As a simple comparison, I [wrote three tests](https://gist.github.com/Measter/c0ffa1b10e1e5a8a009ab72722a43610) to compare
-the Arduino IO, StrongIO, and direct port access. The test involved setting pins D0, D1, D2, D4, D7, D8, and D12 to output
+the Arduino IO, StrongIO, and direct port access. The test involved setting pins D0, D1, D2, D4, D7, D8, and D12 to input
 then reading the pins, then enabling PWM on pins D5, D6, D9, D10, D3, and D11 and setting them to a 50% duty cycle.
 
 It should be noted that in the first test of the Arduino IO, I'd somehow managed to type OUTPUT instead of INPUT when
