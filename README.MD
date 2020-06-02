@@ -88,8 +88,8 @@ Reads the current state of the pin, returning it as a `PinState`.
 
 `uint8_t DigitalIn::shift_in(DigitalOut<ClockPin>, BitOrder)`
 
-Reads in 8 bits of data from the pin by toggling the clock pin to the active state then reading the input pin. Clock pin
-should be in the inactive state before calling.
+Reads in 8 bits of data from the pin by toggling the clock pin to the active state, reading the input pin, then toggling
+the clock pin again. Clock pin should be in the inactive state before calling.
 
 ### Example:
 ```
@@ -123,7 +123,7 @@ Toggles the pin from High to Low, or vice-versa.
 
 `DigitalOut::shift_out(DigitalOut<ClockPin>, BitOrder, uint8_t)`
 
-Writes out 8 bytes of data to the pin one at a time, toggling the clock pin twice after each write. Clock pin should be
+Writes out 8 bits of data to the pin one at a time, toggling the clock pin twice after each write. Clock pin should be
 in the inactive state before calling.
 
 ### Example
@@ -159,7 +159,7 @@ led.set_duty(65);
 
 ### `IO::AnalogIn<Pin>`
 
-* `Pin`: An IO pin defined in the `Pin` namespace wihch is connected to the ADC. Available pins are `A0` to `A7`.
+* `Pin`: An IO pin defined in the `Pin` namespace which is connected to the ADC. Available pins are `A0` to `A7`.
 
 `AnalogIn::start_read()`
 
@@ -193,7 +193,7 @@ it's templated despite there only being one possible pin for each parameter is s
 
 `bool AnalogComp::is_positive_higher()`
 
-Returns whether the voltage on the positive pin is higher than the voltage on the negative pin.
+Returns `true` if the voltage on the positive pin is higher than the voltage on the negative pin.
 
 ### Example
 ```
