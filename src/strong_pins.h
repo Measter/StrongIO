@@ -1,6 +1,8 @@
 #ifndef STRONG_PINS_H
 #define STRONG_PINS_H
 
+#include <avr/io.h>
+
 namespace Pin {
     namespace Ports {
         class PortB {
