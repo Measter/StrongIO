@@ -161,17 +161,17 @@ led.set_duty(65);
 
 * `Pin`: An IO pin defined in the `Pin` namespace wihch is connected to the ADC. Available pins are `A0` to `A7`.
 
-`AnalogIn::pre_read()`
+`AnalogIn::start_read()`
 
 Configures the ADC and starts the conversion. A value cannot be obtained until the conversion has finished, done by
-calling `post_read`.
+calling `finish_read`.
 
-`uint8_t AnalogIn::post_read()`
+`uint16_t AnalogIn::finish_read()`
 
 Waits for the conversion to finish, then fetches the value from the ADC. This and the above function are useful if you 
 have other things that can be done while you wait for the conversion.
 
-`uint8_t AnalogIn::read()`
+`uint16_t AnalogIn::read()`
 
 Simply calls the above two functions in succession.
 

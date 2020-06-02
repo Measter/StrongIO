@@ -212,7 +212,7 @@ namespace IO {
         protected:
             inline AnalogInBase() {}
         public:
-            inline void pre_read() {
+            inline void start_read() {
                 uint8_t ref = analog_reference == AnalogReference::Default ? 1 << 6 : 0;
 
                 // Configure the ADMUX register for the reference mode and channel we desire.
@@ -222,7 +222,7 @@ namespace IO {
                 ADCSRA |= (1 << ADSC);
             }
 
-            inline uint16_t post_read() {
+            inline uint16_t finish_read() {
                 // Wait until it's finished.
                 while(ADCSRA & (1 << ADSC)) {}
 
@@ -234,8 +234,8 @@ namespace IO {
             }
 
             inline uint16_t read() {
-                pre_read();
-                return post_read();
+                start_read();
+                return finish_read();
             }
     };
 
