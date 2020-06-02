@@ -46,6 +46,24 @@ The results of the tests are:
 
 ## Provided API
 
+### Pins
+
+The pins are made available in the `Pin` namespace, and have Arduino-style names. The following list gives the pins
+available for each function:
+
+* Digital In/Out: `D0`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `D8`, `D9`, `D10`, `D11`, `D12`, `D13` (alias `LedBuiltin`),
+`A0`, `A1`, `A2`, `A3`, `A4`, `A5`
+* Analog Input: `A0`, `A1`, `A2`, `A3`, `A4`, `A5`, `A6`, `A7`
+* PWM: `D3`, `D5`, `D6`, `D9`, `D10`, `D11`
+* Analog Comparitor: `D6`, `D7`
+
+
+Additionally, for easy interop with libraries expecting integer pin IDs, all pins have an associated `id` field
+accessable (e.g. `Pin::D10::id`).
+
+---
+
+
 ### `PinState`
 
 An enum class used to represent whether a pin is `High` or `Low`.
