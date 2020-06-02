@@ -168,9 +168,9 @@ int value = sensor.read();
 ### `IO::AnalogComp<PosPin, NegPin>`
 
 * `PosPin`: The positive pin for the analog comparitor. The only pin usable here is `D6`.
-* `NegPin`: The positive pin for the analog comparitor. The only pin usable here is `D7`.
+* `NegPin`: The negative pin for the analog comparitor. The only pin usable here is `D7`.
 
-This is a function not provided by the Arduino library. allows comparisons between voltages on the two pins. The reason
+This is a function not provided by the Arduino library. It allows comparisons between voltages on the two pins. The reason
 it's templated despite there only being one possible pin for each parameter is so it's clear that the pins are in use.
 
 `bool AnalogComp::is_positive_higher()`
