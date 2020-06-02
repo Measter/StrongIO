@@ -10,7 +10,7 @@
 // Simply defining the pins here will configure them, so we don't
 // need to do anything more.
 IO::AnalogIn<Pin::A0> sensorPin;
-IO::PWM<Pin::D13> ledPin;
+IO::PWM<Pin::D11> ledPin;
 
 void setup() {
 }
