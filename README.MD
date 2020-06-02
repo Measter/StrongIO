@@ -28,7 +28,8 @@ the Arduino IO, StrongIO, and direct port access. The test involved setting pins
 then reading the pins, then enabling PWM on pins D5, D6, D9, D10, D3, and D11 and setting them to a 50% duty cycle.
 
 It should be noted that in the first test of the Arduino IO, I'd somehow managed to type OUTPUT instead of INPUT when
-configuring the pins without noticing until I was writing this readme.
+configuring the pins without noticing until I was writing this readme. The incorrect code was accepted and ran without
+any indication that it was incorrect.
 
 D13 was used as a kind of "bookend" to the two sections which I used to time them, and in all three tests is configured
 the same way using direct port access. Analog input is not tested here as it involves waiting for the MCU's ADC which
