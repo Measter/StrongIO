@@ -115,9 +115,9 @@ namespace IO {
     class DigitalOut<Pin, typename enable_if<has_timer<Pin>::value>::type> : public DigitalOutBase<Pin> {
         public:
             inline DigitalOut() {
-                typename Pin::Timer::Timer timer;
+                typename Pin::TimerChannel::Timer timer;
                 // Make sure PWM is disabled.
-                *timer.control_a &= ~Pin::Timer::mode_bit1;
+                *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
 
                 this->inner_init();
             }
@@ -196,8 +196,8 @@ namespace IO {
         public:
             inline DigitalIn() {
                 // Make sure PWM is disabled.
-                typename Pin::Timer::Timer timer;
-                *timer.control_a &= ~Pin::Timer::mode_bit1;
+                typename Pin::TimerChannel::Timer timer;
+                *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
 
                 this->inner_init();
             }
@@ -280,18 +280,18 @@ namespace IO {
 
             inline void set_duty(uint8_t duty) {
                 typename Pin::Port port;
-                typename Pin::Timer channel;
-                typename Pin::Timer::Timer timer;
+                typename Pin::TimerChannel channel;
+                typename Pin::TimerChannel::Timer timer;
                 if (duty == 0) {
                     // Disable timer.
-                    *timer.control_a &= ~Pin::Timer::mode_bit1;
+                    *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
                     *port.output_register &= ~Pin::digital_pin_bit;
                 } else if (duty == 255) {
                     // Disable timer.
-                    *timer.control_a &= ~Pin::Timer::mode_bit1;
+                    *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
                     *port.output_register |= Pin::digital_pin_bit;
                 } else {
-                    *timer.control_a |= Pin::Timer::mode_bit1;
+                    *timer.control_a |= Pin::TimerChannel::mode_bit1;
                     *channel.output_compare = duty;
                 }
             }

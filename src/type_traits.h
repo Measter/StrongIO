@@ -46,7 +46,7 @@ template<class T, class=void>
 struct has_timer : false_type {};
 
 template<class T>
-struct has_timer<T, void_t<typename T::Timer>> : true_type {};
+struct has_timer<T, void_t<typename T::TimerChannel>> : true_type {};
 
 ///////////////////
 /// AnalogConv Requirement
