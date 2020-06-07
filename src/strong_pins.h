@@ -27,10 +27,15 @@ namespace Ports {
 }
 
 namespace Timers {
+    #define TIMER_01_PRESCALE_COUNT 5
+    const uint16_t PROGMEM timer_01_prescale_values[TIMER_01_PRESCALE_COUNT] = {1, 8, 64, 256, 1024};
+    #define TIMER_2_PRESCALE_COUNT 7
+    const uint16_t PROGMEM timer_2_prescale_values[TIMER_2_PRESCALE_COUNT] = {1, 8, 32, 64, 128, 256, 1024};
+
     // Note that the exact values of these variants are so they can just 
     // be cast, masked, and thrown into the appropriate register.
 
-    enum class Timer01PrescaleModes {
+    enum class Timer01PrescaleMode {
         Stopped             = 0b000,
         PS1                 = 0b001,
         PS8                 = 0b010,
@@ -41,7 +46,7 @@ namespace Timers {
         ExternalRising      = 0b111,
     };
 
-    enum class Timer2PrescaleModes {
+    enum class Timer2PrescaleMode {
         Stopped             = 0b000,
         PS1                 = 0b001,
         PS8                 = 0b010,
@@ -81,16 +86,18 @@ namespace Timers {
 
     class Timer0 {
         public:
-            using PrescaleModes = Timer01PrescaleModes;
-            using WaveformModes = Timer02WaveformMode;
+            using PrescaleMode = Timer01PrescaleMode;
+            using WaveformMode = Timer02WaveformMode;
             volatile uint8_t* control_a = &TCCR0A;
             volatile uint8_t* control_b = &TCCR0B;
             volatile uint8_t* interrupt_mask = &TIMSK0;
             volatile uint8_t* interupt_flag = &TIFR0;
             volatile uint8_t* counter_value = &TCNT0;
 
-            const uint8_t prescale_count = 5;
-            const uint16_t prescale_values[5] = {1, 8, 64, 256, 1024};
+            // Used in the loop for when searching for a prescale/output compare value
+            // in tone output.
+            const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
+            const uint16_t* prescale_values = timer_01_prescale_values;
 
             volatile uint8_t* output_compare_a = &OCR0A;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM0A0;
@@ -100,16 +107,16 @@ namespace Timers {
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM0B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM0B1;
 
-            void reset_timer_control() {
+            inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
             }
 
-            void set_prescale(PrescaleModes mode) {
+            inline void set_prescale(PrescaleMode mode) {
                 *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
             }
 
-            void set_waveform(WaveformModes mode) {
+            inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
                 *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
                 *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b01000);
@@ -118,10 +125,11 @@ namespace Timers {
 
     class Timer1 {
         public:
-            using PrescaleModes = Timer01PrescaleModes;
-            using WaveformModes = Timer1WaveformMode;
+            using PrescaleMode = Timer01PrescaleMode;
+            using WaveformMode = Timer1WaveformMode;
             volatile uint8_t* control_a = &TCCR1A;
             volatile uint8_t* control_b = &TCCR1B;
+            volatile uint8_t* control_c = &TCCR1C;
             volatile uint8_t* interrupt_mask = &TIMSK1;
             volatile uint8_t* interupt_flag = &TIFR1;
             volatile uint8_t* counter_value = &TCNT1L;
@@ -129,8 +137,10 @@ namespace Timers {
             volatile uint8_t* input_capture = &ICR1L;
             volatile uint8_t* input_capture_high = &ICR1H;
 
-            const uint8_t prescale_count = 5;
-            const uint16_t prescale_values[5] = {1, 8, 64, 256, 1024};
+            // Used in the loop for when searching for a prescale/output compare value
+            // in tone output.
+            const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
+            const uint16_t* prescale_values = timer_01_prescale_values;
 
             volatile uint8_t* output_compare_a = &OCR1AL;
             volatile uint8_t* output_compare_a_high = &OCR1AH;
@@ -144,16 +154,17 @@ namespace Timers {
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM1B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM1B1;
 
-            void reset_timer_control() {
+            inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
+                *this->control_c = 0;
             }
 
-            void set_prescale(PrescaleModes mode) {
+            inline void set_prescale(PrescaleMode mode) {
                 *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
             }
 
-            void set_waveform(WaveformModes mode) {
+            inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
                 *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
                 *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b11000);
@@ -162,16 +173,18 @@ namespace Timers {
 
     class Timer2 {
         public:
-            using PrescaleModes = Timer2PrescaleModes;
-            using WaveformModes = Timer02WaveformMode;
+            using PrescaleMode = Timer2PrescaleMode;
+            using WaveformMode = Timer02WaveformMode;
             volatile uint8_t* control_a = &TCCR2A;
             volatile uint8_t* control_b = &TCCR2B;
             volatile uint8_t* interrupt_mask = &TIMSK2;
             volatile uint8_t* interupt_flag = &TIFR2;
             volatile uint8_t* counter_value = &TCNT2;
 
-            const uint8_t prescale_count = 7;
-            const uint16_t prescale_values[7] = {1, 8, 32, 64, 128, 256, 1024};
+            // Used in the loop for when searching for a prescale/output compare value
+            // in tone output.
+            const uint8_t prescale_count = TIMER_2_PRESCALE_COUNT;
+            const uint16_t* prescale_values = timer_2_prescale_values;
 
             volatile uint8_t* output_compare_a = &OCR2A;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM2A0;
@@ -181,16 +194,16 @@ namespace Timers {
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM2B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM2B1;
 
-            void reset_timer_control() {
+            inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
             }
 
-            void set_prescale(PrescaleModes mode) {
+            inline void set_prescale(PrescaleMode mode) {
                 *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
             }
 
-            void set_waveform(WaveformModes mode) {
+            inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
                 *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
                 *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b01000);
@@ -212,13 +225,13 @@ namespace Timers {
             static constexpr uint8_t mode_bit0 = TimerType::channel_a_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_a_mode_bit1;
 
-            void set_mode(CompareOutputMode mode) {
+            inline void set_mode(CompareOutputMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode) << 6;
                 TimerType timer;
                 *timer.control_a = (*timer.control_a & 0b00111111) | bits;
             }
 
-            void set_output_compare(uint8_t value) {
+            inline void set_output_compare(uint8_t value) {
                 *this->output_compare = value;
             }
     };
@@ -231,13 +244,13 @@ namespace Timers {
             static constexpr uint8_t mode_bit0 = TimerType::channel_b_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_b_mode_bit1;
 
-            void set_mode(CompareOutputMode mode) {
+            inline void set_mode(CompareOutputMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode) << 4;
                 TimerType timer;
                 *timer.control_a = (*timer.control_a & 0b00111111) | bits;
             }
 
-            void set_output_compare(uint8_t value) {
+            inline void set_output_compare(uint8_t value) {
                 *this->output_compare = value;
             }
     };
