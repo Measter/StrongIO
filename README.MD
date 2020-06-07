@@ -44,9 +44,9 @@ The results of the tests are:
 | **Digital Test**  | 6.42μs    | 60.58μs       | 2.67 μs |
 | **PWM Test**      | 3.58μs    | 41.42μs       | 1.53μs |
 
-## Provided API
+# API
 
-### Pins
+## Pins
 
 The pins are made available in the `Pin` namespace, and have Arduino-style names. The following list gives the pins
 available for each function:
@@ -56,13 +56,148 @@ available for each function:
 * Analog Input: `A0`, `A1`, `A2`, `A3`, `A4`, `A5`, `A6`, `A7`
 * PWM: `D3`, `D5`, `D6`, `D9`, `D10`, `D11`
 * Analog Comparitor: `D6`, `D7`
+* Tone: `D6`, `D9`, `D11`
 
 
-Additionally, for easy interop with libraries expecting integer pin IDs, all pins have an associated `id` field
+Additionally, for easy interop with Arduino libraries expecting integer pin IDs, all pins have an associated `id` field
 accessable (e.g. `Pin::D10::id`).
+
+## Timers
+
+There is a fairly basic API for configuring the waveform generator and prescale value of the timers. The available timers
+are:
+
+* `Timer0`
+* `Timer1`
+* `Timer2`
+
+### `TimerN`
+
+Represents the given timer, and contains pointers to all the registers for configuring the timer.
+
+`TimerN::reset_timer_control()`
+
+Resets the control registers (e.g. `TCCR1A`) back to 0. The other timer registers are untouched.
+
+`TimerN::set_prescale(PrescaleMode)`
+
+Sets the prescale mode of the timer. As the available modes of the prescaler differ depending on the timer, the exact
+type taken is not the same for all timers:
+
+* `Timer0`, and `Timer1` take `Timer01PrescaleMode`
+* `Timer2` takes `Timer2PrescaleMode`
+
+`TimerN::set_waveform(WaveformMode)`
+
+Sets the waveform mode of the timer. As with the prescale, the available modes differ depending on the timer, as does
+the input type::
+
+* `Timer0` and `Timer2` take `Timer02WaveformMode`
+* `Timer1` takes `Timer1WaveformMode`
+
+### Example
+```
+// Configuring Timer1 as the Arduino environment does.
+Timers::Timer1 timer;
+timer.set_waveform(Timers::Timer1WaveformMode::PWMPhaseCorrect_MAX);
+timer.set_prescale(Timers::Timer01PrescaleMode::PS64);
+```
 
 ---
 
+### `ChannelA<Timer>` and `ChannelB<Timer>`
+
+* `Timer`: One of the timers on the chip, as described above.
+
+`ChannelN::set_mode(CompareOutputMode)`
+
+Sets the mode of the channel.
+
+`ChannelN::set_output_compare(uint8_t value)`
+
+Sets the output compare register for the channel. Note that it only supports 8-bit at this time.
+
+---
+
+### `Timer01PrescaleMode`
+
+Represents the available prescale modes for `Timer0` and `Timer1`. Variants are:
+
+* `Stopped`
+* `PS1`
+* `PS8`
+* `PS64`
+* `PS256`
+* `PS1024`
+* `ExternalFalling`
+* `ExternalRising`
+
+---
+
+### `Timer2PrescaleMode`
+
+Represents the available prescale modes for `Timer2`. Variants are:
+
+* `Stopped`
+* `PS1`
+* `PS8`
+* `PS32`
+* `PS64`
+* `PS128`
+* `PS256`
+* `PS1024`
+
+---
+
+### `Timer02WaveformMode`
+
+Represents the waveform modes awailable for `Timer0` and `Timer2`. The `MAX` and `OCRA` are the `TOP` value.
+
+* `Normal`
+* `PWMPhaseCorrect_MAX`
+* `CTC_OCRA`
+* `PWMFast_MAX`
+* `PWMPhaseCorrect_OCRA`
+* `PWMFast_OCRA`
+
+---
+
+### `Timer1WaveformMode`
+
+Represents the available waveform modes for `Timer1`. The `MAX`, `OCRA` and `ICR` are the `TOP` values. Note that the 
+8-bit modes have the same name as in `Timer02WaveformMode` for consistancy.
+
+* `Normal`
+* `PWMPhaseCorrect_MAX`
+* `PWM9bitPhaseCorrect`
+* `PWM10bitPhaseCorrect`
+* `CTC_OCRA`
+* `PWMFast_MAX`
+* `PWM9bitFast`
+* `PWM10bitFast`
+* `PWMPhaseFreqCorrect_ICR`
+* `PWMPhaseFreqCorrect_OCRA`
+* `PWMPhaseCorrect_ICR`
+* `PWMPhaseCorrect_OCRA`
+* `CTC_ICR`
+* `PWMFast_ICR`
+* `PWMFast_OCRA`
+
+---
+
+### `CompareOutputMode`
+
+Represents the available compare output mode for the channel. These are generically named due to the exact meaning of
+the mode depending on the timer's waveform mode.
+
+* `Mode0`
+* `Mode1`
+* `Mode2`
+* `Mode3`
+
+---
+
+## IO
 
 ### `PinState`
 
@@ -201,4 +336,38 @@ IO::AnalogComp<Pin::D6, Pin::D7> comp;
 if (comp.is_positive_higher()) {
     // Do something
 }
+```
+
+---
+
+### `IO::Tone<Pin>`
+
+* `Pin`: A Pin on the A channel of a timer. Usable pins are `D6`, `D9`, and `D11`.
+
+Configures the timer to produce a tone of the given frequency. This function will reconfigure the timer making the B
+channel pin (`D3`, `D5`, and `D10`) unusable for PWM.
+
+Notes for those in the Arduino environment:
+
+* Using this with pin `D6` will interfere with the `millis`, `micros`, `delay` and `delayMicroseconds` functions, as they depend on Timer 0 being in a specific configuration.
+* The Arduino library's `tone` function uses Timer 2, so use of this type with pin `D11` will interfere with that.
+* If you declare a tone pin as a global, you will need to re-initialise it in the `setup` function, as the Arduino
+initialisation will reconfigure the timer after the constructor runs.
+
+`Tone::init()`
+
+Will configure the pin ready for tone output. Only needed if used as a global in the Arduino environment.
+
+`Tone::set_tone(int)`
+
+Produces a tone of the given frequency on the pin.
+
+`Tone::stop_tone()`
+
+Halts the tone on the pin. **Does not restore timer configuration**.
+
+### Example
+```
+IO::Tone<Pin::D6> tonePin;
+tonePin.set_tone(800);
 ```
