@@ -115,9 +115,9 @@ namespace IO {
     class DigitalOut<Pin, typename enable_if<has_timer<Pin>::value>::type> : public DigitalOutBase<Pin> {
         public:
             inline DigitalOut() {
-                typename Pin::TimerChannel::Timer timer;
                 // Make sure PWM is disabled.
-                *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
+                typename Pin::TimerChannel channel;
+                channel.set_mode(Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
@@ -196,8 +196,8 @@ namespace IO {
         public:
             inline DigitalIn() {
                 // Make sure PWM is disabled.
-                typename Pin::TimerChannel::Timer timer;
-                *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
+                typename Pin::TimerChannel channel;
+                channel.set_mode(Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
@@ -284,15 +284,15 @@ namespace IO {
                 typename Pin::TimerChannel::Timer timer;
                 if (duty == 0) {
                     // Disable timer.
-                    *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
+                    channel.set_mode(Timers::CompareOutputMode::Mode0);
                     *port.output_register &= ~Pin::digital_pin_bit;
                 } else if (duty == 255) {
                     // Disable timer.
-                    *timer.control_a &= ~Pin::TimerChannel::mode_bit1;
+                    channel.set_mode(Timers::CompareOutputMode::Mode0);
                     *port.output_register |= Pin::digital_pin_bit;
                 } else {
-                    *timer.control_a |= Pin::TimerChannel::mode_bit1;
-                    *channel.output_compare = duty;
+                    channel.set_mode(Timers::CompareOutputMode::Mode1);
+                    channel.set_output_compare(duty);
                 }
             }
     };
