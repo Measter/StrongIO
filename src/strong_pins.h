@@ -313,6 +313,7 @@ namespace Pin {
         public:
             using Port = Ports::PortD;
             using TimerChannel = Timers::ChannelA<Timers::Timer0>;
+            using Tone = void;
             using AnalogCompPositive = AnalogComparitor;
             static constexpr uint8_t digital_pin_bit = 1<<PD6;
             static constexpr uint8_t id = 6;
@@ -338,6 +339,7 @@ namespace Pin {
         public:
             using Port = Ports::PortB;
             using TimerChannel = Timers::ChannelA<Timers::Timer1>;
+            using Tone = void;
             static constexpr uint8_t digital_pin_bit = 1<<PB1;
             static constexpr uint8_t id = 9;
     };
@@ -354,6 +356,7 @@ namespace Pin {
         public:
             using Port = Ports::PortB;
             using TimerChannel = Timers::ChannelA<Timers::Timer2>;
+            using Tone = void;
             static constexpr uint8_t digital_pin_bit = 1<<PB3;
             static constexpr uint8_t id = 11;
     };

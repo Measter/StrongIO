@@ -315,6 +315,59 @@ namespace IO {
                 return (*comp.comp_control_register & (1<<ACO)) != 0;
             }
     };
+
+    template<typename Pin>
+    class Tone {
+        static_assert(has_tone<Pin>::value, "Tone can only be used with a timer pin on Channel A");
+        public:
+            inline void init() {
+                // Setting pin to output.
+                typename Pin::Port port;
+                *port.mode_register |= Pin::digital_pin_bit;
+                // Shouldn't need a NOP here. Configuring the time will take long enough.
+
+                typename Pin::TimerChannel::Timer timer;
+                using WaveformMode = typename Pin::TimerChannel::Timer::WaveformMode;
+
+                timer.reset_timer_control();
+                timer.set_waveform(WaveformMode::CTC_OCRA);
+            }
+
+            inline Tone() {
+                this->init();
+            }
+
+            inline void set_tone(int frequency) {
+                typename Pin::TimerChannel channel;
+                typename Pin::TimerChannel::Timer timer;
+                using PrescaleMode = typename Pin::TimerChannel::Timer::PrescaleMode;
+
+                PrescaleMode mode = PrescaleMode::Stopped;
+                int ocr = 0;
+
+                frequency *= 2;
+                for (uint8_t i = 0; i < timer.prescale_count; i++) {
+                    ocr = F_CPU / frequency / pgm_read_word(timer.prescale_values + i) - 1;
+                    if (ocr <= 255) {
+                        // Not exactly safe, but works for the 328p.
+                        mode = static_cast<PrescaleMode>(i+1);
+                        break;
+                    }
+                }
+
+                channel.set_output_compare(ocr);
+                timer.set_prescale(mode);
+
+                // Connect Pin to timer to toggle on each compare match.
+                channel.set_mode(Timers::CompareOutputMode::Mode1);
+            }
+
+            inline void stop_tone() {
+                typename Pin::TimerChannel channel;
+                // Just disconnect the pin. We won't bother turning the timer off.
+                channel.set_mode(Timers::CompareOutputMode::Mode0);
+            }
+    };
 }
 
 #endif //STRONG_IO_H

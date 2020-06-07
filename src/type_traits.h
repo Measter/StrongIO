@@ -49,6 +49,16 @@ template<class T>
 struct has_timer<T, void_t<typename T::TimerChannel>> : true_type {};
 
 ///////////////////
+/// Tone Requirement
+///////////////////
+
+template<class T, class=void>
+struct has_tone : false_type {};
+
+template<class T>
+struct has_tone<T, void_t<typename T::Tone>> : true_type {};
+
+///////////////////
 /// AnalogConv Requirement
 ///////////////////
 
