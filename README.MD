@@ -318,6 +318,16 @@ int value = sensor.read();
 
 ---
 
+### `IO::analog_reference`
+
+Used to set the voltage reference for the ADC. Default value is the internal reference, but can be set to
+`AnalogReference::External`.
+
+Warning to those in the Arduino environment: This does **not** in any way interface with the Arduino lib's
+`analogReference()` function.
+
+---
+
 ### `IO::AnalogComp<PosPin, NegPin>`
 
 * `PosPin`: The positive pin for the analog comparitor. The only pin usable here is `D6`.
