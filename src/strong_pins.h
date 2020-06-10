@@ -88,6 +88,7 @@ namespace Timers {
         public:
             using PrescaleMode = Timer01PrescaleMode;
             using WaveformMode = Timer02WaveformMode;
+            using CompareType = uint8_t;
             volatile uint8_t* control_a = &TCCR0A;
             volatile uint8_t* control_b = &TCCR0B;
             volatile uint8_t* interrupt_mask = &TIMSK0;
@@ -118,8 +119,8 @@ namespace Timers {
 
             inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b01000);
+                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
+                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00001000);
             }
     };
 
@@ -127,6 +128,7 @@ namespace Timers {
         public:
             using PrescaleMode = Timer01PrescaleMode;
             using WaveformMode = Timer1WaveformMode;
+            using CompareType = uint16_t;
             volatile uint8_t* control_a = &TCCR1A;
             volatile uint8_t* control_b = &TCCR1B;
             volatile uint8_t* control_c = &TCCR1C;
@@ -142,15 +144,15 @@ namespace Timers {
             const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
             const uint16_t* prescale_values = timer_01_prescale_values;
 
-            volatile uint8_t* output_compare_a = &OCR1AL;
+            volatile uint16_t* output_compare_a = &OCR1A;
+            volatile uint8_t* output_compare_a_low = &OCR1AL;
             volatile uint8_t* output_compare_a_high = &OCR1AH;
-            volatile uint16_t* output_compare_a_16bit = &OCR1A;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM1A0;
             static constexpr uint8_t channel_a_mode_bit1 = 1 << COM1A1;
 
-            volatile uint8_t* output_compare_b = &OCR1BL;
+            volatile uint16_t* output_compare_b = &OCR1B;
+            volatile uint8_t* output_compare_b_low = &OCR1BL;
             volatile uint8_t* output_compare_b_high = &OCR1BH;
-            volatile uint16_t* output_compare_b_16bit = &OCR1B;
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM1B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM1B1;
 
@@ -166,8 +168,8 @@ namespace Timers {
 
             inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b11000);
+                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
+                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00011000);
             }
     };
 
@@ -175,6 +177,7 @@ namespace Timers {
         public:
             using PrescaleMode = Timer2PrescaleMode;
             using WaveformMode = Timer02WaveformMode;
+            using CompareType = uint8_t;
             volatile uint8_t* control_a = &TCCR2A;
             volatile uint8_t* control_b = &TCCR2B;
             volatile uint8_t* interrupt_mask = &TIMSK2;
@@ -205,8 +208,8 @@ namespace Timers {
 
             inline void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b11);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b01000);
+                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
+                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00001000);
             }
     };
 
@@ -221,7 +224,6 @@ namespace Timers {
     class ChannelA {
         public:
             using Timer = TimerType;
-            volatile uint8_t* output_compare = TimerType().output_compare_a; // I can't believe this works...
             static constexpr uint8_t mode_bit0 = TimerType::channel_a_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_a_mode_bit1;
 
@@ -231,8 +233,9 @@ namespace Timers {
                 *timer.control_a = (*timer.control_a & 0b00111111) | bits;
             }
 
-            inline void set_output_compare(uint8_t value) {
-                *this->output_compare = value;
+            inline void set_output_compare(typename TimerType::CompareType value) {
+                TimerType timer;
+                *timer.output_compare_a = value;
             }
     };
 
@@ -240,7 +243,6 @@ namespace Timers {
     class ChannelB {
         public:
             using Timer = TimerType;
-            volatile uint8_t* output_compare = TimerType().output_compare_b;
             static constexpr uint8_t mode_bit0 = TimerType::channel_b_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_b_mode_bit1;
 
@@ -250,8 +252,9 @@ namespace Timers {
                 *timer.control_a = (*timer.control_a & 0b00111111) | bits;
             }
 
-            inline void set_output_compare(uint8_t value) {
-                *this->output_compare = value;
+            inline void set_output_compare(typename TimerType::CompareType value) {
+                TimerType timer;
+                *timer.output_compare_b = value;
             }
     };
 }
