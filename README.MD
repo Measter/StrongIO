@@ -113,9 +113,10 @@ timer.set_prescale(Timers::Timer01PrescaleMode::PS64);
 
 Sets the mode of the channel.
 
-`ChannelN::set_output_compare(uint8_t value)`
+`ChannelN::set_output_compare(Timer::CompareType value)`
 
-Sets the output compare register for the channel. Note that it only supports 8-bit at this time.
+Sets the output compare register for the channel. `CompareType` is `uint8_t` for `Timer0` and `Timer2`, `uint16_t`
+for `Timer1`.
 
 ---
 
@@ -213,7 +214,7 @@ An enum class for defining the bit order in shifting operations. Variants are `M
 
 ### `IO::DigitalIn<Pin, Mode>`
 
-* `Pin`: An IO pin defined in the `Pin` namespace (e.g. `Pin::D4`, `Pin::A1`, etc.). Cannot be `Pin::A6` or `Pin::A7`.
+* `Pin`: An IO pin capable of digital input (e.g. `Pin::D4`, `Pin::A1`, etc.). Cannot be `Pin::A6` or `Pin::A7`.
 * `Mode`: Whether the internal pullup resistor is connected. Possible values are `Pullup` and `NoPullup`. If not
 provided, defaults to `NoPullup`.
 
@@ -242,7 +243,7 @@ if (buttonPin.read() == PinState::High) {
 
 ### `IO::DigitalOut<Pin>`
 
-* `Pin`: An IO pin defined in the `Pin` namespace (e.g. `Pin::D4`, `Pin::A1`, etc.).
+* `Pin`: An IO pin capable of digital output. (e.g. `Pin::D4`, `Pin::A1`, etc.). Cannot be `Pin::A6` or `Pin::A7`.
 
 `DigitalOut::write(PinState)`
 
@@ -274,10 +275,10 @@ dataPin.shift_out(clockPin, BitOrder::MSBFirst, 0xAB);
 
 ### `IO::PWM<Pin>`
 
-* `Pin`: An IO pin defined in the `Pin` namespace which is connected to a timer. Available pins are `D3`, `D5`, `D6`,
-`D9`, `D10`, and `D11`.
+* `Pin`: An IO pin connected to a timer. Available pins are `D3`, `D5`, `D6`, `D9`, `D10`, and `D11`.
 
-The timer is not connected on initialization, only when `set_duty` is called.
+Does not reconfigure timer. The timer is not connected on initialization, only when `set_duty` is called. This type
+limits you to 8-bit mode PWM on the 16-bit `Timer1`,
 
 `PWM::set_duty(uint8_t)`
 
@@ -294,7 +295,7 @@ led.set_duty(65);
 
 ### `IO::AnalogIn<Pin>`
 
-* `Pin`: An IO pin defined in the `Pin` namespace which is connected to the ADC. Available pins are `A0` to `A7`.
+* `Pin`: An IO pin connected to the ADC. Available pins are `A0` to `A7`.
 
 `AnalogIn::start_read()`
 
