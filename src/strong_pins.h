@@ -103,14 +103,28 @@ namespace Timers {
             volatile uint8_t* output_compare_a = &OCR0A;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM0A0;
             static constexpr uint8_t channel_a_mode_bit1 = 1 << COM0A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE0A;
 
             volatile uint8_t* output_compare_b = &OCR0B;
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM0B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM0B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE0B;
 
             inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
+            }
+
+            inline void reset_counter() {
+                *this->counter_value = 0;
+            }
+
+            inline void enable_overflow_interrupt() {
+                *this->interrupt_mask |= 0b00000001;
+            }
+
+            inline void disable_overflow_interrupt() {
+                *this->interrupt_mask &= 0b11111110;
             }
 
             inline void set_prescale(PrescaleMode mode) {
@@ -149,17 +163,31 @@ namespace Timers {
             volatile uint8_t* output_compare_a_high = &OCR1AH;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM1A0;
             static constexpr uint8_t channel_a_mode_bit1 = 1 << COM1A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE1A;
 
             volatile uint16_t* output_compare_b = &OCR1B;
             volatile uint8_t* output_compare_b_low = &OCR1BL;
             volatile uint8_t* output_compare_b_high = &OCR1BH;
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM1B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM1B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE1B;
 
             inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
                 *this->control_c = 0;
+            }
+
+            inline void reset_counter() {
+                *this->counter_value = 0;
+            }
+
+            inline void enable_overflow_interrupt() {
+                *this->interrupt_mask |= 0b00000001;
+            }
+
+            inline void disable_overflow_interrupt() {
+                *this->interrupt_mask &= 0b11111110;
             }
 
             inline void set_prescale(PrescaleMode mode) {
@@ -192,14 +220,28 @@ namespace Timers {
             volatile uint8_t* output_compare_a = &OCR2A;
             static constexpr uint8_t channel_a_mode_bit0 = 1 << COM2A0;
             static constexpr uint8_t channel_a_mode_bit1 = 1 << COM2A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE2A;
 
             volatile uint8_t* output_compare_b = &OCR2B;
             static constexpr uint8_t channel_b_mode_bit0 = 1 << COM2B0;
             static constexpr uint8_t channel_b_mode_bit1 = 1 << COM2B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE2B;
 
             inline void reset_timer_control() {
                 *this->control_a = 0;
                 *this->control_b = 0;
+            }
+
+            inline void reset_counter() {
+                *this->counter_value = 0;
+            }
+
+            inline void enable_overflow_interrupt() {
+                *this->interrupt_mask |= 0b00000001;
+            }
+
+            inline void disable_overflow_interrupt() {
+                *this->interrupt_mask &= 0b11111110;
             }
 
             inline void set_prescale(PrescaleMode mode) {
@@ -237,6 +279,16 @@ namespace Timers {
                 TimerType timer;
                 *timer.output_compare_a = value;
             }
+
+            inline void enable_match_interrupt() {
+                TimerType timer;
+                *timer.interrupt_mask |= TimerType::channel_a_match_interrupt_bit;
+            }
+
+            inline void disable_match_interrupt() {
+                TimerType timer;
+                *timer.interrupt_mask &= ~TimerType::channel_a_match_interrupt_bit;
+            }
     };
 
     template <class TimerType>
@@ -255,6 +307,16 @@ namespace Timers {
             inline void set_output_compare(typename TimerType::CompareType value) {
                 TimerType timer;
                 *timer.output_compare_b = value;
+            }
+
+            inline void enable_match_interrupt() {
+                TimerType timer;
+                *timer.interrupt_mask |= TimerType::channel_b_match_interrupt_bit;
+            }
+
+            inline void disable_match_interrupt() {
+                TimerType timer;
+                *timer.interrupt_mask &= ~TimerType::channel_b_match_interrupt_bit;
             }
     };
 }

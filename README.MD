@@ -79,6 +79,18 @@ Represents the given timer, and contains pointers to all the registers for confi
 
 Resets the control registers (e.g. `TCCR1A`) back to 0. The other timer registers are untouched.
 
+`TimerN::reset_counter()`
+
+Resets the timer's counter register to 0.
+
+`TimerN::enable_overflow_interrupt()`
+
+Sets the Overflow Interrupt Enable bit.
+
+`TimerN::disable_overflow_interrupt()`
+
+Clears the Overflow Interrupt Enable bit.
+
 `TimerN::set_prescale(PrescaleMode)`
 
 Sets the prescale mode of the timer. As the available modes of the prescaler differ depending on the timer, the exact
@@ -117,6 +129,14 @@ Sets the mode of the channel.
 
 Sets the output compare register for the channel. `CompareType` is `uint8_t` for `Timer0` and `Timer2`, `uint16_t`
 for `Timer1`.
+
+`ChannelN::enable_match_interrupt()`
+
+Sets the Output Compare Match Interrupt Enable bit.
+
+`ChannelN::disable_match_interrupt()`
+
+Clears the Output Compare Match Interrupt Enable bit.
 
 ---
 
