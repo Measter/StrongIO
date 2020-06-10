@@ -291,7 +291,7 @@ namespace IO {
                     channel.set_mode(Timers::CompareOutputMode::Mode0);
                     *port.output_register |= Pin::digital_pin_bit;
                 } else {
-                    channel.set_mode(Timers::CompareOutputMode::Mode1);
+                    channel.set_mode(Timers::CompareOutputMode::Mode2);
                     channel.set_output_compare(duty);
                 }
             }
