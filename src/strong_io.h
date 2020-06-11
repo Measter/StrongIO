@@ -337,26 +337,23 @@ namespace IO {
                 this->init();
             }
 
-            inline void set_tone(int frequency) {
+            inline void set_tone(uint16_t frequency) {
                 typename Pin::TimerChannel channel;
                 typename Pin::TimerChannel::Timer timer;
                 using PrescaleMode = typename Pin::TimerChannel::Timer::PrescaleMode;
 
-                PrescaleMode mode = PrescaleMode::Stopped;
-                int ocr = 0;
-
                 frequency *= 2;
-                for (uint8_t i = 0; i < timer.prescale_count; i++) {
-                    ocr = F_CPU / frequency / pgm_read_word(timer.prescale_values + i) - 1;
-                    if (ocr <= 255) {
-                        // Not exactly safe, but works for the 328p.
-                        mode = static_cast<PrescaleMode>(i+1);
+                uint16_t target_prescale = F_CPU / 256 / frequency;
+                uint8_t mode;
+                for (mode = 0; mode < timer.prescale_count; mode++) {
+                    if (pgm_read_word(timer.prescale_values + mode) >= target_prescale) {
                         break;
                     }
                 }
 
+                uint8_t ocr = F_CPU / pgm_read_word(timer.prescale_values + mode) / frequency - 1;
                 channel.set_output_compare(ocr);
-                timer.set_prescale(mode);
+                timer.set_prescale(static_cast<PrescaleMode>(mode+1));
 
                 // Connect Pin to timer to toggle on each compare match.
                 channel.set_mode(Timers::CompareOutputMode::Mode1);
