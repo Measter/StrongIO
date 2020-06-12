@@ -1,7 +1,7 @@
-# StrongIO for the Arduino Nano/Uno
+# StrongIO
 
-Provides a more strongly-typed interface for the GPIO pins on the Nano/Uno's ATmega 328P. Though I intend to use it on 
-Arduinos, none of the code depends on the Arduino library being present. It will work without it, though the `AnalogIn`
+Provides a more strongly-typed interface for the GPIO pins on the ATmega 328P. Though I intend to use it with an 
+Arduino Nano/Uno, none of the code depends on the Arduino library being present and will work without it, though the `AnalogIn`
 and `PWM` types assume that the ADC and timers are configured as they are by the Arduino library.
 
 ## Goals
@@ -11,10 +11,11 @@ For example using a digital pin for analog input, or trying to use PWM on a pin 
 
 ## How it Works
 
-The way this works is by using C++'s templating engine to define your operations at compile-time. The pins are each
+StrongIO works by using C++'s templating engine to define your operations at compile-time. The pins are each
 unique types, which store the information needed to manipulate them. In addition to that, the differant configurations
 of the pins are also different types, with only the valid operations defined. What this means is that, unlike the
-Arduino library, it's harder to accidentally read from a pin configured as output for example.
+Arduino library, it's harder to accidentally perform an operation on an incorrectly configured pin (e.g. reading from
+an output pin).
 
 A side effect of defining things in this way is that everything is known at compile time, making it much smaller and
 faster than the Arduino library, which does runtime lookups of the pin data.
@@ -26,10 +27,6 @@ Configuring a pin is as simple as declaring an IO type with the pin (e.g. `IO::D
 As a simple comparison, I [wrote three tests](https://gist.github.com/Measter/c0ffa1b10e1e5a8a009ab72722a43610) to compare
 the Arduino IO, StrongIO, and direct port access. The test involved setting pins D0, D1, D2, D4, D7, D8, and D12 to input
 then reading the pins, then enabling PWM on pins D5, D6, D9, D10, D3, and D11 and setting them to a 50% duty cycle.
-
-It should be noted that in the first test of the Arduino IO, I'd somehow managed to type OUTPUT instead of INPUT when
-configuring the pins without noticing until I was writing this readme. The incorrect code was accepted and ran without
-any indication that it was incorrect.
 
 D13 was used as a kind of "bookend" to the two sections which I used to time them, and in all three tests is configured
 the same way using direct port access. Analog input is not tested here as it involves waiting for the MCU's ADC which
