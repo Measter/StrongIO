@@ -11,7 +11,7 @@ void setup() {
     IO::DigitalOut<Pin::D6> pwmPin;
     
     typename Pin::D6::TimerChannel channel;
-    // For FastPWM Mode2 sets the pin low on a compare match, high on a timer overflow.
+    // For PWM, Mode2 sets the pin low on a compare match, high on a timer overflow.
     channel.set_mode(Timers::CompareOutputMode::Mode2);
     channel.set_output_compare(76);
 
@@ -23,7 +23,7 @@ void setup() {
 
     timer2.set_waveform(Timers::Timer1WaveformMode::PWM10bitFast);
     timer2.set_prescale(Timers::Timer01PrescaleMode::PS8);
-    // For FastPWM Mode2 sets the pin low on a compare match, high on a timer overflow.
+    // For PWM, Mode2 sets the pin low on a compare match, high on a timer overflow.
     channel2.set_mode(Timers::CompareOutputMode::Mode2);
     channel2.set_output_compare(307);
 }
