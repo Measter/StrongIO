@@ -34,7 +34,7 @@ void loop() {
             buttonState = reading;
 
             if (buttonState == PinState::High) {
-                // Here I'm exposing a function of the 328P that isn't 
+                // Here I'm exposing a function of the 328P that isn't
                 // obviously exposed in the Arduino IO: you can toggle
                 // the pin by writing High to it.
                 ledPin.toggle();

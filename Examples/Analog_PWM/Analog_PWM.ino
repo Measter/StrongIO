@@ -22,7 +22,7 @@ void loop() {
     //
     // As far as I can tell, there's no reason you couldn't
     // do other things while you wait, so I've split reading
-    // into two functions pre_read() and post_read().
+    // into two functions start_read() and finish_read().
     // 
     // The read() function used here simply calls both in
     // succession.

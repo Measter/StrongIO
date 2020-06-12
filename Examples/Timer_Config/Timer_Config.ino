@@ -7,22 +7,23 @@ void setup() {
     IO::PWM<Pin::D3> p;
     p.set_duty(76);
 
-    // Equivalent to this on Channel B, Timer 0:
+    // Equivalent to this on Channel A, Timer 0:
     IO::DigitalOut<Pin::D6> pwmPin;
     
     typename Pin::D6::TimerChannel channel;
+    // For FastPWM Mode2 sets the pin low on a compare match, high on a timer overflow.
     channel.set_mode(Timers::CompareOutputMode::Mode2);
     channel.set_output_compare(76);
 
     // Manually configure Channel A, Timer 1 for 10-bit FastPWM, 8 clock prescale, 30% duty.
+    // We can just do this to set the pin as output instead of poking at registers manually.
     IO::DigitalOut<Pin::D9> pwmPin2;
-    typename Pin::D9::TimerChannel channel2;
-    typename Pin::D9::TimerChannel::Timer timer2;
-    using PrescaleMode = Pin::D9::TimerChannel::Timer::PrescaleMode;
-    using WaveformMode = Pin::D9::TimerChannel::Timer::WaveformMode;
+    Timers::ChannelA<Timers::Timer1> channel2;
+    Timers::Timer1 timer2;
 
-    timer2.set_waveform(WaveformMode::PWM10bitFast);
-    timer2.set_prescale(PrescaleMode::PS8);
+    timer2.set_waveform(Timers::Timer1WaveformMode::PWM10bitFast);
+    timer2.set_prescale(Timers::Timer01PrescaleMode::PS8);
+    // For FastPWM Mode2 sets the pin low on a compare match, high on a timer overflow.
     channel2.set_mode(Timers::CompareOutputMode::Mode2);
     channel2.set_output_compare(307);
 }
