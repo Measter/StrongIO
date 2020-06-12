@@ -267,6 +267,8 @@ namespace Timers {
             }
     };
 
+    // These modes have these opaque names because what the channel mode does depends on the
+    // waveform mode of the timer.
     enum class CompareOutputMode {
         Mode0 = 0b00,
         Mode1 = 0b01,
