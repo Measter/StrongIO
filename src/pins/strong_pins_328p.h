@@ -494,6 +494,17 @@ namespace Analog {
                 *this->control_register_a |= (1<<ADSC);
             }
 
+            inline void wait_for_conversion() {
+                while(*this->control_register_a & (1 << ADSC)) {}
+            }
+
+            inline uint16_t read_data() {
+                uint8_t low = *this->data_register_low;
+                uint8_t high = *this->data_register_high;
+
+                return (high << 8) | low;
+            }
+
             inline void enable_auto_trigger() {
                 *this->control_register_a |= (1<<ADATE);
             }
