@@ -479,7 +479,7 @@ namespace Analog {
 
             inline void set_channel(MultiplexerChannel channel) {
                 uint8_t chan = static_cast<uint8_t>(channel);
-                *this->multiplexer_selection = (*this->multiplexer_selection &= 0b11110000) | chan;
+                *this->multiplexer_selection = (*this->multiplexer_selection & 0b11110000) | chan;
             }
 
             inline void enable_adc() {
