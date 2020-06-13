@@ -675,7 +675,7 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC0;
             static constexpr uint8_t id = 14;
-            static constexpr uint8_t analog_channel = 0;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC0;
     };
 
     class A1 {
@@ -684,7 +684,7 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC1;
             static constexpr uint8_t id = 15;
-            static constexpr uint8_t analog_channel = 1;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC1;
     };
 
     class A2 {
@@ -693,7 +693,7 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC2;
             static constexpr uint8_t id = 16;
-            static constexpr uint8_t analog_channel = 2;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC2;
     };
 
     class A3 {
@@ -702,7 +702,7 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC3;
             static constexpr uint8_t id = 17;
-            static constexpr uint8_t analog_channel = 3;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC3;
     };
 
     class A4 {
@@ -711,7 +711,7 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC4;
             static constexpr uint8_t id = 18;
-            static constexpr uint8_t analog_channel = 4;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC4;
     };
 
     class A5 {
@@ -720,21 +720,21 @@ namespace Pin {
             using Port = Ports::PortC;
             static constexpr uint8_t digital_pin_bit = 1<<PC5;
             static constexpr uint8_t id = 19;
-            static constexpr uint8_t analog_channel = 5;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC5;
     };
 
     class A6 {
         public:
             using AnalogConv = void;
             static constexpr uint8_t id = 20;
-            static constexpr uint8_t analog_channel = 6;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC6;
     };
 
     class A7 {
         public:
             using AnalogConv = void;
             static constexpr uint8_t id = 21;
-            static constexpr uint8_t analog_channel = 7;
+            static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC7;
     };
 }
 

@@ -28,11 +28,6 @@ inline PinState operator! (PinState p) {
     return PinState::Low;
 }
 
-enum class AnalogReference {
-    Default,
-    External,
-};
-
 namespace IO {
 
     template<class Pin>
@@ -203,8 +198,7 @@ namespace IO {
             }
     };
 
-
-    AnalogReference analog_reference = AnalogReference::Default;
+    Analog::VoltageReference analog_reference = Analog::VoltageReference::AVCC;
 
     template<typename Pin>
     class AnalogInBase {
@@ -213,24 +207,17 @@ namespace IO {
             inline AnalogInBase() {}
         public:
             inline void start_read() {
-                uint8_t ref = analog_reference == AnalogReference::Default ? 1 << 6 : 0;
+                Analog::AnalogDigitalConverter adc;
 
-                // Configure the ADMUX register for the reference mode and channel we desire.
-                ADMUX = ref | Pin::analog_channel;
-
-                // Set the ADSC bit to start our conversation.
-                ADCSRA |= (1 << ADSC);
+                adc.set_voltage_ref(analog_reference);
+                adc.set_channel(Pin::analog_channel);
+                adc.start_conversion();
             }
 
             inline uint16_t finish_read() {
-                // Wait until it's finished.
-                while(ADCSRA & (1 << ADSC)) {}
-
-                // Now we can read our data out of the registers.
-                uint8_t low = ADCL;
-                uint8_t high = ADCH;
-
-                return (high << 8) | low;
+                Analog::AnalogDigitalConverter adc;
+                adc.wait_for_conversion();
+                return adc.read_data();
             }
 
             inline uint16_t read() {
