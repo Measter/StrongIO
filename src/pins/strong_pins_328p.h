@@ -377,7 +377,7 @@ namespace Analog {
     enum class AutoTriggerSource {
         FreeRunning         = 0b000,
         AnalogComparator    = 0b001,
-        ExternelInt0        = 0b010,
+        ExternalInt0        = 0b010,
         Timer0CompMatchA    = 0b011,
         Timer0Overflow      = 0b100,
         Timer1CompMatchB    = 0b101,
