@@ -320,6 +320,79 @@ Returns whether the positive voltage is higher than the negative pin voltage.
 
 ---
 
+### `AnalogDigitalConverter`
+
+Represents the ADC peripheral, providing control functions and pointers to the related registers.
+
+`set_voltage_ref(VoltageReference)`
+
+Sets the voltage reference of the ADC.
+
+`left_adjust()` and `right_adjust()`
+
+Sets whether the conversion result is left or right adjusted in the result registers.
+
+`set_channel(MultiplexerChannel)`
+
+Sets the source channel for conversion.
+
+`enable_adc()` and `disable_adc()`
+
+Enables and disables the ADC.
+
+`start_conversion()`
+
+Sends the signal to start a conversion. You must wait for the conversion to finish before you can read the data.
+
+`wait_for_conversion()`
+
+Waits in a busy loop until the conversion is finished.
+
+`uint16_t read_data()`
+
+Returns the result of conversion.
+
+`en/disable_auto_trigger()`
+
+Enables and disables auto-triggering of conversion.
+
+`en/disable_interrupt()`
+
+Enables and disables the interrupt triggered when conversion is finished.
+
+`set_prescale(ADCPrescaler`)
+
+Used to set the clock prescale for the ADC.
+
+`en/disable_comparator_multiplexer()`
+
+Allows the ADC pins to be used by the Analog Comparator. Note that the ADC needs to be disabled separately.
+
+`set_auto_trigger(AutoTriggerSource)`
+
+Sets the source of the automatic conversion trigger.
+
+`en/disable_digital_pin<Pin>()`
+
+Enables and disables the digital input buffer on the given pin.
+
+* `Pin` Pins `A0` to `A5`
+
+### Example
+```
+// Configure the ADC and read from A0.
+Analog::AnalogDigitalConverter adc;
+adc.set_prescale(Analog::ADCPrescaler::PS128);
+adc.enable_adc();
+adc.set_voltage_ref(Analog::VoltageReference::AVCC);
+adc.set_channel(Pin::A0::analog_channel);
+adc.start_conversion();
+adc.wait_for_conversion();
+uint16_t data = adc.read_data();
+```
+
+---
+
 ## IO
 
 ### `PinState`
