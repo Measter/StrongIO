@@ -14,6 +14,7 @@
 #define STRONG_PINS_328P_H
 
 #include <avr/io.h>
+#include "type_traits.h"
 
 namespace Ports {
     class PortB {
@@ -343,6 +344,47 @@ namespace Analog {
         RisingEdge   = 0b11,
     };
 
+    enum class VoltageReference {
+        AREF        = 0b00,
+        AVCC        = 0b01,
+        Internal1V1 = 0b11,
+    };
+
+    enum class MultiplexerChannel {
+        ADC0         = 0b0000,
+        ADC1         = 0b0001,
+        ADC2         = 0b0010,
+        ADC3         = 0b0011,
+        ADC4         = 0b0100,
+        ADC5         = 0b0101,
+        ADC6         = 0b0110,
+        ADC7         = 0b0111,
+        TempSensor   = 0b1000,
+        Interval1V1  = 0b1110,
+        GND          = 0b1111,
+    };
+
+    enum class ADCPrescaler {
+        PS2   = 0b001,
+        PS4   = 0b010,
+        PS8   = 0b011,
+        PS16  = 0b100,
+        PS32  = 0b101,
+        PS64  = 0b110,
+        PS128 = 0b111,
+    };
+
+    enum class AutoTriggerSource {
+        FreeRunning         = 0b000,
+        AnalogComparator    = 0b001,
+        ExternelInt0        = 0b010,
+        Timer0CompMatchA    = 0b011,
+        Timer0Overflow      = 0b100,
+        Timer1CompMatchB    = 0b101,
+        Timer1Overflow      = 0b110,
+        Timer1Capture       = 0b111,
+    };
+
     class AnalogComparator {
         public:
             volatile uint8_t* adc_control_register = &ADCSRB;
@@ -410,6 +452,94 @@ namespace Analog {
 
             inline bool is_positive_higher() {
                 return (*this->comp_control_register & (1<<ACO)) != 0;
+            }
+    };
+
+    class AnalogDigitalConverter {
+        public:
+            volatile uint8_t* multiplexer_selection = &ADMUX;
+            volatile uint8_t* control_register_a = &ADCSRA;
+            volatile uint8_t* control_register_b = &ADCSRB;
+            volatile uint8_t* data_register_low = &ADCL;
+            volatile uint8_t* data_register_high = &ADCH;
+            volatile uint8_t* digital_input_disable = &DIDR0;
+
+            inline void set_voltage_ref(VoltageReference ref) {
+                uint8_t vref = static_cast<uint8_t>(ref) << REFS0;
+                *this->multiplexer_selection = (*this->multiplexer_selection & 0b00111111) | vref;
+            }
+
+            inline void left_adjust() {
+                *this->multiplexer_selection |= (1<<ADLAR);
+            }
+
+            inline void right_adjust() {
+                *this->multiplexer_selection &= ~(1<<ADLAR);
+            }
+
+            inline void set_channel(MultiplexerChannel channel) {
+                uint8_t chan = static_cast<uint8_t>(channel);
+                *this->multiplexer_selection = (*this->multiplexer_selection &= 0b11110000) | chan;
+            }
+
+            inline void enable_adc() {
+                *this->control_register_a |= (1<<ADEN);
+            }
+
+            inline void disable_adc() {
+                *this->control_register_a &= ~(1<<ADEN);
+            }
+
+            inline void start_conversion() {
+                *this->control_register_a |= (1<<ADSC);
+            }
+
+            inline void enable_auto_trigger() {
+                *this->control_register_a |= (1<<ADATE);
+            }
+
+            inline void disable_auto_trigger() {
+                *this->control_register_a &= ~(1<<ADATE);
+            }
+
+            inline void enable_interrupt() {
+                *this->control_register_a |= (1<<ADIE);
+            }
+
+            inline void disable_interrupt() {
+                *this->control_register_a &= ~(1<<ADIE);
+            }
+
+            inline void set_prescale(ADCPrescaler prescale) {
+                uint8_t ps = static_cast<uint8_t>(prescale);
+                *this->control_register_a = (*this->control_register_a & 0b11111000) | ps;
+            }
+
+            inline void enable_comparitor_multiplexer() {
+                *this->control_register_b |= (1<<ACME);
+            }
+
+            inline void disable_comparitor_multiplexer() {
+                *this->control_register_b &= ~(1<<ACME);
+            }
+
+            inline void set_auto_trigger(AutoTriggerSource source) {
+                uint8_t src = static_cast<uint8_t>(source);
+                *this->control_register_b = (*this->control_register_b & 0b11111000) | src;
+            }
+
+            template <typename Pin>
+            inline void disable_digital_input() {
+                static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
+                uint8_t bit = 1 << Pin::analog_channel;
+                *this->digital_input_disable |= bit;
+            }
+
+            template <typename Pin>
+            inline void enable_digital_input() {
+                static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
+                uint8_t bit = 1 << Pin::analog_channel;
+                *this->digital_input_disable &= ~bit;
             }
     };
 }
