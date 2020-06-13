@@ -335,14 +335,86 @@ namespace Timers {
     };
 }
 
-namespace Pin {
+namespace Analog {
+    /// Specific values are so it can be cast to a uint8_t and put into register.
+    enum class ComparatorInterruptMode {
+        OutputToggle = 0b00,
+        FallingEdge  = 0b10,
+        RisingEdge   = 0b11,
+    };
 
-    class AnalogComparitor {
+    class AnalogComparator {
         public:
             volatile uint8_t* adc_control_register = &ADCSRB;
             volatile uint8_t* comp_control_register = &ACSR;
             volatile uint8_t* digital_disable_register = &DIDR1;
+
+            inline void disable_ain0_digital_input() {
+                *this->digital_disable_register |= (1<<AIN0D);
+            }
+
+            inline void enable_ain0_digital_input() {
+                *this->digital_disable_register &= ~(1<<AIN0D);
+            }
+
+            inline void disable_ain1_digital_input() {
+                *this->digital_disable_register |= (1<<AIN1D);
+            }
+
+            inline void enable_ain1_digital_input() {
+                *this->digital_disable_register &= ~(1<<AIN1D);
+            }
+
+            inline void disable_comparator() {
+                *this->comp_control_register &= ~(1<<ACD);
+            }
+
+            inline void enable_comparator() {
+                *this->comp_control_register |= (1<<ACD);
+            }
+
+            inline void disable_bandgap_ref() {
+                *this->comp_control_register &= ~(1<<ACBG);
+            }
+
+            inline void enable_bandgap_ref() {
+                *this->comp_control_register |= (1<<ACBG);
+            }
+
+            inline void disable_interrupt() {
+                *this->comp_control_register &= ~(1<<ACIE);
+            }
+
+            inline void enable_interrupt() {
+                *this->comp_control_register |= (1<<ACIE);
+            }
+
+            inline void disable_input_capture() {
+                *this->comp_control_register &= ~(1<<ACIC);
+            }
+
+            inline void enable_input_capture() {
+                *this->comp_control_register |= (1<<ACIC);
+            }
+
+            inline void set_interrupt_mode(ComparatorInterruptMode mode) {
+                // Datasheet says we must disable the interrupt while changing these bits.
+                uint8_t old_interrupt = *this->comp_control_register & (1<<ACIE);
+                this->disable_interrupt();
+
+                uint8_t int_mode = static_cast<uint8_t>(mode);
+                *this->comp_control_register = (*this->comp_control_register & 0b11111100) | int_mode;
+
+                *this->comp_control_register |= old_interrupt;
+            }
+
+            inline bool is_positive_higher() {
+                return (*this->comp_control_register & (1<<ACO)) != 0;
+            }
     };
+}
+
+namespace Pin {
 
     class D0 {
         public:
@@ -393,7 +465,7 @@ namespace Pin {
             using Port = Ports::PortD;
             using TimerChannel = Timers::ChannelA<Timers::Timer0>;
             using Tone = void;
-            using AnalogCompPositive = AnalogComparitor;
+            using AnalogCompPositive = Analog::AnalogComparator;
             static constexpr uint8_t digital_pin_bit = 1<<PD6;
             static constexpr uint8_t id = 6;
     };
@@ -401,7 +473,7 @@ namespace Pin {
     class D7 {
         public:
             using Port = Ports::PortD;
-            using AnalogCompNegative = AnalogComparitor;
+            using AnalogCompNegative = Analog::AnalogComparator;
             static constexpr uint8_t digital_pin_bit = 1<<PD7;
             static constexpr uint8_t id = 7;
     };

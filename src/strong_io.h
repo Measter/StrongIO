@@ -312,7 +312,7 @@ namespace IO {
 
             inline bool is_positive_higher() {
                 typename Positive::AnalogCompPositive comp;
-                return (*comp.comp_control_register & (1<<ACO)) != 0;
+                return comp.is_positive_higher();
             }
     };
 
