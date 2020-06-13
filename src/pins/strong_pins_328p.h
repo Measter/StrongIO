@@ -526,11 +526,11 @@ namespace Analog {
                 *this->control_register_a = (*this->control_register_a & 0b11111000) | ps;
             }
 
-            inline void enable_comparitor_multiplexer() {
+            inline void enable_comparator_multiplexer() {
                 *this->control_register_b |= (1<<ACME);
             }
 
-            inline void disable_comparitor_multiplexer() {
+            inline void disable_comparator_multiplexer() {
                 *this->control_register_b &= ~(1<<ACME);
             }
 
@@ -542,6 +542,7 @@ namespace Analog {
             template <typename Pin>
             inline void disable_digital_input() {
                 static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
+                static_assert(is_digital<Pin>::value, "Pin must be on a digital port");
                 uint8_t bit = 1 << Pin::analog_channel;
                 *this->digital_input_disable |= bit;
             }
@@ -549,6 +550,7 @@ namespace Analog {
             template <typename Pin>
             inline void enable_digital_input() {
                 static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
+                static_assert(is_digital<Pin>::value, "Pin must be on a digital port");
                 uint8_t bit = 1 << Pin::analog_channel;
                 *this->digital_input_disable &= ~bit;
             }
