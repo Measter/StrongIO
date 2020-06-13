@@ -215,6 +215,111 @@ the mode depending on the timer's waveform mode.
 
 ---
 
+## Analog
+
+### `ComparatorInterruptMode`
+
+An enum representing the triggers for the comparator's interrupt.
+
+* `OutputToggle`
+* `FallingEdge`
+* `RisingEdge`
+
+---
+
+### `VoltageReference`
+
+This represents the different reference voltages for the ADC.
+
+* `AREF`
+* `AVCC`
+* `Internal1V1`
+
+Note for Arduino users: These are equivalent to `EXTERNAL`, `DEFAULT`, and `INTERNAL` respectively.
+
+--- 
+
+### `MultiplexerChannel`
+
+Represents the sources available to the ADC.
+
+* `ADC0` (Pin `A0`)
+* `ADC1` (Pin `A1`)
+* `ADC2` (Pin `A2`)
+* `ADC3` (Pin `A3`)
+* `ADC4` (Pin `A4`)
+* `ADC5` (Pin `A5`)
+* `ADC6` (Pin `A6`)
+* `ADC7` (Pin `A7`)
+* `TempSensor`
+* `Internal1V1`
+* `GND`
+
+---
+
+### `ADCPrescale`
+
+The various prescale modes available for the ADC.
+
+* `PS2`
+* `PS4`
+* `PS8`
+* `PS16`
+* `PS32`
+* `PS64`
+* `PS128`
+
+---
+
+### `AutoTriggerSource`
+
+Represents the sources available to auto-trigger a conversion.
+
+* `FreeRunning`
+* `AnalogComparator`
+* `ExternalInt0`
+* `Timer0CompMatchA`
+* `Timer0Overflow`
+* `Timer1CompMatchB`
+* `Timer1Overflow`
+* `Timer1Capture`
+
+---
+
+### `AnalogComparator`
+
+Represents the analog comparatar peripheral, providing control functions and pointers to the related registers.
+
+`en/disable_ainN_digital_input()`
+
+Enables or disables the digital input buffer for the `AIN0` (`D6`) and `AIN11` (`D7`) pins.
+
+`en/disable_comparitor()`
+
+Enables or disables the comparatar.
+
+`en/disable_bandgap_reference()`
+
+Enables or disables the fixed bandgap reference voltage. Replaces the positive input.
+
+`en/disable_interrupt()`
+
+Enables or disables the interrupt trigger.
+
+`en/disable_input_capture()`
+
+Enables or disables the input capture function of `Timer1`.
+
+`set_interrupt_mode(ComparatarInterruptMode)`
+
+Sets the mode used for triggering the interrupt.
+
+`bool is_positive_higher()`
+
+Returns whether the positive voltage is higher than the negative pin voltage.
+
+---
+
 ## IO
 
 ### `PinState`
@@ -338,8 +443,8 @@ int value = sensor.read();
 
 ### `IO::analog_reference`
 
-Used to set the voltage reference for the ADC. Default value is the internal reference, but can be set to
-`AnalogReference::External`.
+Used by the `IO::AnalogIn` type to set the reference source when reading. This is the `Analog::VoltageReference` enum
+described above.
 
 Warning to those in the Arduino environment: This does **not** in any way interface with the Arduino lib's
 `analogReference()` function.
