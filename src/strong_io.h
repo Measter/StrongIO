@@ -104,9 +104,8 @@ namespace IO {
     class DigitalOut<Pin, typename enable_if<has_timer<Pin>::value>::type> : public DigitalOutBase<Pin> {
         public:
             inline DigitalOut() {
-                // Make sure PWM is disabled.
-                typename Pin::TimerChannel channel;
-                channel.set_mode(Timers::CompareOutputMode::Mode0);
+                // Ensure the timer is disconnected from the pin.
+                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
@@ -182,9 +181,8 @@ namespace IO {
     class DigitalIn<Pin, Mode, typename enable_if<has_timer<Pin>::value>::type> : public DigitalInBase<Pin, Mode> {
         public:
             inline DigitalIn() {
-                // Make sure PWM is disabled.
-                typename Pin::TimerChannel channel;
-                channel.set_mode(Timers::CompareOutputMode::Mode0);
+                // Ensure the timer is disconnected from the pin.
+                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
@@ -244,23 +242,22 @@ namespace IO {
                 Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
 
                 // We won't enable the timer here.
-                // We'll instead do what the Arduino IO does, and conditionally enable/disable
+                // We'll instead do what the Arduino IO does, and conditionally dis/connect
                 // it based on whether the input is 0, 255, or between.
             }
 
             inline void set_duty(uint8_t duty) {
-                typename Pin::TimerChannel channel;
                 if (duty == 0) {
-                    // Disable timer.
-                    channel.set_mode(Timers::CompareOutputMode::Mode0);
+                    // Disconnect timer.
+                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
                     Pin::Port::OutputRegister::clear_bit(Pin::digital_pin_bit);
                 } else if (duty == 255) {
-                    // Disable timer.
-                    channel.set_mode(Timers::CompareOutputMode::Mode0);
+                    // Disconnect timer.
+                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
                     Pin::Port::OutputRegister::set_bit(Pin::digital_pin_bit);
                 } else {
-                    channel.set_mode(Timers::CompareOutputMode::Mode2);
-                    channel.set_output_compare(duty);
+                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode2);
+                    Pin::TimerChannel::set_output_compare(duty);
                 }
             }
     };
@@ -291,11 +288,10 @@ namespace IO {
                 // Setting pin to output.
                 Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
 
-                typename Pin::TimerChannel::Timer timer;
                 using WaveformMode = typename Pin::TimerChannel::Timer::WaveformMode;
 
-                timer.reset_timer_control();
-                timer.set_waveform(WaveformMode::CTC_OCRA);
+                Pin::TimerChannel::Timer::reset_timer_control();
+                Pin::TimerChannel::Timer::set_waveform(WaveformMode::CTC_OCRA);
             }
 
             inline Tone() {
@@ -303,7 +299,6 @@ namespace IO {
             }
 
             inline void set_tone(uint16_t frequency) {
-                typename Pin::TimerChannel channel;
                 typename Pin::TimerChannel::Timer timer;
                 using PrescaleMode = typename Pin::TimerChannel::Timer::PrescaleMode;
 
@@ -317,17 +312,16 @@ namespace IO {
                 }
 
                 uint8_t ocr = F_CPU / pgm_read_word(timer.prescale_values + mode) / frequency - 1;
-                channel.set_output_compare(ocr);
-                timer.set_prescale(static_cast<PrescaleMode>(mode+1));
+                Pin::TimerChannel::set_output_compare(ocr);
+                Pin::TimerChannel::Timer::set_prescale(static_cast<PrescaleMode>(mode+1));
 
                 // Connect Pin to timer to toggle on each compare match.
-                channel.set_mode(Timers::CompareOutputMode::Mode1);
+                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode1);
             }
 
             inline void stop_tone() {
-                typename Pin::TimerChannel channel;
                 // Just disconnect the pin. We won't bother turning the timer off.
-                channel.set_mode(Timers::CompareOutputMode::Mode0);
+                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
             }
     };
 }

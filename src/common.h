@@ -4,13 +4,18 @@
 #include <avr/io.h>
 
 template <typename T>
-constexpr T combine_bits() {
+constexpr T build_bitmask() {
     return 0;
 }
 
+template <typename T>
+constexpr T build_bitmask(T bit) {
+    return (1 << bit);
+}
+
 template <typename T, typename... Type>
-constexpr T combine_bits(T bit, Type... bits) {
-    return (1 << bit) | combine_bits(bits...);
+constexpr T build_bitmask(T bit, Type... bits) {
+    return (1 << bit) | build_bitmask(bits...);
 }
 
 template <typename Type, uint16_t Addr, Type Reset = 0>
@@ -18,6 +23,10 @@ struct IOReg {
     public:
         inline static constexpr volatile Type* ptr() {
             return reinterpret_cast<volatile Type*>(Addr);
+        }
+
+        inline static constexpr void reset() {
+            *ptr() = Reset;
         }
 
         inline static constexpr void set_value(Type val) {
@@ -46,12 +55,12 @@ struct IOReg {
 
         template <typename... Bits>
         inline static constexpr void set_bits(Bits... bits) {
-            *ptr() |= combine_bits(bits...);
+            *ptr() |= build_bitmask(bits...);
         }
 
         template <typename... Bits>
         inline static constexpr void clear_bits(Bits... bits) {
-            *ptr() &= ~combine_bits(bits...);
+            *ptr() &= ~build_bitmask(bits...);
         }
 };
 

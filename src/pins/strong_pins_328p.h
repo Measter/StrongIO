@@ -102,52 +102,57 @@ namespace Timers {
             using PrescaleMode = Timer01PrescaleMode;
             using WaveformMode = Timer02WaveformMode;
             using CompareType = uint8_t;
-            volatile uint8_t* control_a = &TCCR0A;
-            volatile uint8_t* control_b = &TCCR0B;
-            volatile uint8_t* interrupt_mask = &TIMSK0;
-            volatile uint8_t* interupt_flag = &TIFR0;
-            volatile uint8_t* counter_value = &TCNT0;
+
+            using ControlA = IOReg<uint8_t, 0x24 + __SFR_OFFSET>; // TCCR1A
+            using ControlB = IOReg<uint8_t, 0x25 + __SFR_OFFSET>; // TCCR1B
+            using InterruptMask = IOReg<uint8_t, 0x6E>; // TIMSK0
+            using InterruptFlag = IOReg<uint8_t, 0x15 + __SFR_OFFSET>; // TIFR0
+            using CounterValue = IOReg<CompareType, 0x26 + __SFR_OFFSET>; // TCNT0
+            using GeneralTimerControl = IOReg<uint8_t, 0x23 + __SFR_OFFSET>; //GTCCR
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
             const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
             const uint16_t* prescale_values = timer_01_prescale_values;
 
-            volatile uint8_t* output_compare_a = &OCR0A;
-            static constexpr uint8_t channel_a_mode_bit0 = 1 << COM0A0;
-            static constexpr uint8_t channel_a_mode_bit1 = 1 << COM0A1;
-            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE0A;
+            using OutputCompareA = IOReg<CompareType, 0x27 + __SFR_OFFSET>; //OCR0A
+            static constexpr uint8_t channel_a_mode_bit0 = COM0A0;
+            static constexpr uint8_t channel_a_mode_bit1 = COM0A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = OCIE0A;
 
-            volatile uint8_t* output_compare_b = &OCR0B;
-            static constexpr uint8_t channel_b_mode_bit0 = 1 << COM0B0;
-            static constexpr uint8_t channel_b_mode_bit1 = 1 << COM0B1;
-            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE0B;
+            using OutputCompareB = IOReg<CompareType, 0x28 + __SFR_OFFSET>; //OCR0A
+            static constexpr uint8_t channel_b_mode_bit0 = COM0B0;
+            static constexpr uint8_t channel_b_mode_bit1 = COM0B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = OCIE0B;
 
-            inline void reset_timer_control() {
-                *this->control_a = 0;
-                *this->control_b = 0;
+            inline static void reset_timer_control() {
+                ControlA::reset();
+                ControlB::reset();
             }
 
-            inline void reset_counter() {
-                *this->counter_value = 0;
+            inline static void reset_counter() {
+                CounterValue::reset();
             }
 
-            inline void enable_overflow_interrupt() {
-                *this->interrupt_mask |= 0b00000001;
+            inline static void enable_overflow_interrupt() {
+                InterruptMask::set_bit(TOIE0);
             }
 
-            inline void disable_overflow_interrupt() {
-                *this->interrupt_mask &= 0b11111110;
+            inline static void disable_overflow_interrupt() {
+                InterruptMask::set_bit(TOIE0);
             }
 
-            inline void set_prescale(PrescaleMode mode) {
-                *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
+            inline static void set_prescale(PrescaleMode mode) {
+                uint8_t mask = build_bitmask(CS00, CS01, CS02);
+                ControlB::replace_bits(mask, static_cast<uint8_t>(mode));
             }
 
-            inline void set_waveform(WaveformMode mode) {
+            inline static void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00001000);
+                uint8_t mask = build_bitmask(WGM00, WGM01);
+                ControlA::replace_bits(mask, bits & mask);
+                mask = build_bitmask(WGM02);
+                ControlB::replace_bits(mask, bits & mask);
             }
     };
 
@@ -156,61 +161,68 @@ namespace Timers {
             using PrescaleMode = Timer01PrescaleMode;
             using WaveformMode = Timer1WaveformMode;
             using CompareType = uint16_t;
-            volatile uint8_t* control_a = &TCCR1A;
-            volatile uint8_t* control_b = &TCCR1B;
-            volatile uint8_t* control_c = &TCCR1C;
-            volatile uint8_t* interrupt_mask = &TIMSK1;
-            volatile uint8_t* interupt_flag = &TIFR1;
-            volatile uint8_t* counter_value = &TCNT1L;
-            volatile uint8_t* counter_value_high = &TCNT1H;
-            volatile uint8_t* input_capture = &ICR1L;
-            volatile uint8_t* input_capture_high = &ICR1H;
+
+            using ControlA = IOReg<uint8_t, 0x80>; // TCCR1A
+            using ControlB = IOReg<uint8_t, 0x81>; // TCCR1B
+            using ControlC = IOReg<uint8_t, 0x82>; // TCCR1C
+            using InterruptMask = IOReg<uint8_t, 0x6F>; // TIMSK1
+            using InterruptFlag = IOReg<uint8_t, 0x16 + __SFR_OFFSET>; // TIFR1
+            using CounterValue = IOReg<CompareType, 0x84>; // TCNT1
+            using CounterValueLow = IOReg<uint8_t, 0x84>; // TCNT1L
+            using CounterValueHigh = IOReg<uint8_t, 0x85>; // TCNT1H
+            using InputCapture = IOReg<uint16_t, 0x86>; // ICR1
+            using InputCaptureLow = IOReg<uint8_t, 0x86>; // ICR1L
+            using InputCaptureHigh = IOReg<uint8_t, 0x87>; // ICR1H
+            using GeneralTimerControl = IOReg<uint8_t, 0x23 + __SFR_OFFSET>; //GTCCR
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
             const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
             const uint16_t* prescale_values = timer_01_prescale_values;
 
-            volatile uint16_t* output_compare_a = &OCR1A;
-            volatile uint8_t* output_compare_a_low = &OCR1AL;
-            volatile uint8_t* output_compare_a_high = &OCR1AH;
-            static constexpr uint8_t channel_a_mode_bit0 = 1 << COM1A0;
-            static constexpr uint8_t channel_a_mode_bit1 = 1 << COM1A1;
-            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE1A;
+            using OutputCompareA = IOReg<CompareType, 0x88>; // OCR1A
+            using OutputCompareALow = IOReg<uint8_t, 0x88>; // OCR1AL
+            using OutputCompareAHigh = IOReg<uint8_t, 0x89>; // OCR1AH
+            static constexpr uint8_t channel_a_mode_bit0 = COM1A0;
+            static constexpr uint8_t channel_a_mode_bit1 = COM1A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = OCIE1A;
 
-            volatile uint16_t* output_compare_b = &OCR1B;
-            volatile uint8_t* output_compare_b_low = &OCR1BL;
-            volatile uint8_t* output_compare_b_high = &OCR1BH;
-            static constexpr uint8_t channel_b_mode_bit0 = 1 << COM1B0;
-            static constexpr uint8_t channel_b_mode_bit1 = 1 << COM1B1;
-            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE1B;
+            using OutputCompareB = IOReg<CompareType, 0x8A>; // OCR1B
+            using OutputCompareBLow = IOReg<uint8_t, 0x8A>; // OCR1BL
+            using OutputCompareBHigh = IOReg<uint8_t, 0x8B>; // OCR1BH
+            static constexpr uint8_t channel_b_mode_bit0 = COM1B0;
+            static constexpr uint8_t channel_b_mode_bit1 = COM1B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = OCIE1B;
 
-            inline void reset_timer_control() {
-                *this->control_a = 0;
-                *this->control_b = 0;
-                *this->control_c = 0;
+            inline static void reset_timer_control() {
+                ControlA::reset();
+                ControlB::reset();
+                ControlC::reset();
             }
 
-            inline void reset_counter() {
-                *this->counter_value = 0;
+            inline static void reset_counter() {
+                CounterValue::reset();
             }
 
-            inline void enable_overflow_interrupt() {
-                *this->interrupt_mask |= 0b00000001;
+            inline static void enable_overflow_interrupt() {
+                InterruptMask::set_bit(TOIE1);
             }
 
-            inline void disable_overflow_interrupt() {
-                *this->interrupt_mask &= 0b11111110;
+            inline static void disable_overflow_interrupt() {
+                InterruptMask::clear_bit(TOIE1);
             }
 
-            inline void set_prescale(PrescaleMode mode) {
-                *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
+            inline static void set_prescale(PrescaleMode mode) {
+                uint8_t mask = build_bitmask(CS10, CS11, CS12);
+                ControlB::replace_bits(mask, static_cast<uint8_t>(mode));
             }
 
-            inline void set_waveform(WaveformMode mode) {
+            inline static void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00011000);
+                uint8_t mask = build_bitmask(WGM11, WGM10);
+                ControlA::replace_bits(mask, bits & mask);
+                mask = build_bitmask(WGM13, WGM12);
+                ControlB::replace_bits(mask, bits & mask);
             }
     };
 
@@ -219,52 +231,58 @@ namespace Timers {
             using PrescaleMode = Timer2PrescaleMode;
             using WaveformMode = Timer02WaveformMode;
             using CompareType = uint8_t;
-            volatile uint8_t* control_a = &TCCR2A;
-            volatile uint8_t* control_b = &TCCR2B;
-            volatile uint8_t* interrupt_mask = &TIMSK2;
-            volatile uint8_t* interupt_flag = &TIFR2;
-            volatile uint8_t* counter_value = &TCNT2;
+
+            using ControlA = IOReg<uint8_t, 0xB0>; // TCCR2A
+            using ControlB = IOReg<uint8_t, 0xB1>; // TCCR2B
+            using InterruptMask = IOReg<uint8_t, 0x70>; // TIMSK2
+            using InterruptFlag = IOReg<uint8_t, 0x17 + __SFR_OFFSET>; // TIFR2
+            using CounterValue = IOReg<CompareType, 0xB2>; // TCNT2
+            using GeneralTimerControl = IOReg<uint8_t, 0x23 + __SFR_OFFSET>; //GTCCR
+            using AsyncStatus = IOReg<uint8_t, 0xB6>; //ASSR
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
             const uint8_t prescale_count = TIMER_2_PRESCALE_COUNT;
             const uint16_t* prescale_values = timer_2_prescale_values;
 
-            volatile uint8_t* output_compare_a = &OCR2A;
-            static constexpr uint8_t channel_a_mode_bit0 = 1 << COM2A0;
-            static constexpr uint8_t channel_a_mode_bit1 = 1 << COM2A1;
-            static constexpr uint8_t channel_a_match_interrupt_bit = 1 << OCIE2A;
+            using OutputCompareA = IOReg<CompareType, 0xB3>; // OCR2A
+            static constexpr uint8_t channel_a_mode_bit0 = COM2A0;
+            static constexpr uint8_t channel_a_mode_bit1 = COM2A1;
+            static constexpr uint8_t channel_a_match_interrupt_bit = OCIE2A;
 
-            volatile uint8_t* output_compare_b = &OCR2B;
-            static constexpr uint8_t channel_b_mode_bit0 = 1 << COM2B0;
-            static constexpr uint8_t channel_b_mode_bit1 = 1 << COM2B1;
-            static constexpr uint8_t channel_b_match_interrupt_bit = 1 << OCIE2B;
+            using OutputCompareB = IOReg<CompareType, 0xB4>; // OCR2B
+            static constexpr uint8_t channel_b_mode_bit0 = COM2B0;
+            static constexpr uint8_t channel_b_mode_bit1 = COM2B1;
+            static constexpr uint8_t channel_b_match_interrupt_bit = OCIE2B;
 
-            inline void reset_timer_control() {
-                *this->control_a = 0;
-                *this->control_b = 0;
+            inline static void reset_timer_control() {
+                ControlA::reset();
+                ControlB::reset();
             }
 
-            inline void reset_counter() {
-                *this->counter_value = 0;
+            inline static void reset_counter() {
+                CounterValue::reset();
             }
 
-            inline void enable_overflow_interrupt() {
-                *this->interrupt_mask |= 0b00000001;
+            inline static void enable_overflow_interrupt() {
+                InterruptMask::set_bit(TOIE2);
             }
 
-            inline void disable_overflow_interrupt() {
-                *this->interrupt_mask &= 0b11111110;
+            inline static void disable_overflow_interrupt() {
+                InterruptMask::clear_bit(TOIE2);
             }
 
-            inline void set_prescale(PrescaleMode mode) {
-                *this->control_b = (*this->control_b & 0b11111000) | static_cast<uint8_t>(mode);
+            inline static void set_prescale(PrescaleMode mode) {
+                uint8_t mask = build_bitmask(CS22, CS21, CS20);
+                ControlB::replace_bits(mask, static_cast<uint8_t>(mode));
             }
 
-            inline void set_waveform(WaveformMode mode) {
+            inline static void set_waveform(WaveformMode mode) {
                 uint8_t bits = static_cast<uint8_t>(mode);
-                *this->control_a = (*this->control_a & 0b11111100) | (bits & 0b00000011);
-                *this->control_b = (*this->control_b & 0b11100111) | (bits & 0b00001000);
+                uint8_t mask = build_bitmask(WGM21, WGM20);
+                ControlA::replace_bits(mask, bits & mask);
+                mask = build_bitmask(WGM22);
+                ControlB::replace_bits(mask, bits & mask);
             }
     };
 
@@ -283,26 +301,24 @@ namespace Timers {
             using Timer = TimerType;
             static constexpr uint8_t mode_bit0 = TimerType::channel_a_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_a_mode_bit1;
+            static constexpr uint8_t match_interrupt_bit = TimerType::channel_a_match_interrupt_bit;
 
-            inline void set_mode(CompareOutputMode mode) {
-                uint8_t bits = static_cast<uint8_t>(mode) << 6;
-                TimerType timer;
-                *timer.control_a = (*timer.control_a & 0b00111111) | bits;
+            inline static constexpr void set_mode(CompareOutputMode mode) {
+                uint8_t bits = static_cast<uint8_t>(mode) << mode_bit0;
+                uint8_t mask = build_bitmask(mode_bit1, mode_bit0);
+                TimerType::ControlA::replace_bits(mask, bits);
             }
 
-            inline void set_output_compare(typename TimerType::CompareType value) {
-                TimerType timer;
-                *timer.output_compare_a = value;
+            inline static constexpr void set_output_compare(typename TimerType::CompareType value) {
+                TimerType::OutputCompareA::set_value(value);
             }
 
-            inline void enable_match_interrupt() {
-                TimerType timer;
-                *timer.interrupt_mask |= TimerType::channel_a_match_interrupt_bit;
+            inline static constexpr void enable_match_interrupt() {
+                TimerType::InterruptMask::set_bit(match_interrupt_bit);
             }
 
-            inline void disable_match_interrupt() {
-                TimerType timer;
-                *timer.interrupt_mask &= ~TimerType::channel_a_match_interrupt_bit;
+            inline static constexpr void disable_match_interrupt() {
+                TimerType::InterruptMask::clear_bit(match_interrupt_bit);
             }
     };
 
@@ -312,26 +328,24 @@ namespace Timers {
             using Timer = TimerType;
             static constexpr uint8_t mode_bit0 = TimerType::channel_b_mode_bit0;
             static constexpr uint8_t mode_bit1 = TimerType::channel_b_mode_bit1;
+            static constexpr uint8_t match_interrupt_bit = TimerType::channel_b_match_interrupt_bit;
 
-            inline void set_mode(CompareOutputMode mode) {
-                uint8_t bits = static_cast<uint8_t>(mode) << 4;
-                TimerType timer;
-                *timer.control_a = (*timer.control_a & 0b00111111) | bits;
+            inline static constexpr void set_mode(CompareOutputMode mode) {
+                uint8_t bits = static_cast<uint8_t>(mode) << mode_bit0;
+                uint8_t mask = build_bitmask(mode_bit1, mode_bit0);
+                TimerType::ControlA::replace_bits(mask, bits);
             }
 
-            inline void set_output_compare(typename TimerType::CompareType value) {
-                TimerType timer;
-                *timer.output_compare_b = value;
+            inline static constexpr void set_output_compare(typename TimerType::CompareType value) {
+                TimerType::OutputCompareB::set_value(value);
             }
 
-            inline void enable_match_interrupt() {
-                TimerType timer;
-                *timer.interrupt_mask |= TimerType::channel_b_match_interrupt_bit;
+            inline static constexpr void enable_match_interrupt() {
+                TimerType::InterruptMask::set_bit(match_interrupt_bit);
             }
 
-            inline void disable_match_interrupt() {
-                TimerType timer;
-                *timer.interrupt_mask &= ~TimerType::channel_b_match_interrupt_bit;
+            inline static constexpr void disable_match_interrupt() {
+                TimerType::InterruptMask::clear_bit(match_interrupt_bit);
             }
     };
 }
