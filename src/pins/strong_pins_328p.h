@@ -472,102 +472,104 @@ namespace Analog {
 
     class AnalogDigitalConverter {
         public:
-            volatile uint8_t* multiplexer_selection = &ADMUX;
-            volatile uint8_t* control_register_a = &ADCSRA;
-            volatile uint8_t* control_register_b = &ADCSRB;
-            volatile uint8_t* data_register_low = &ADCL;
-            volatile uint8_t* data_register_high = &ADCH;
-            volatile uint8_t* digital_input_disable = &DIDR0;
+            using MultiplexerSelection = IOReg<uint8_t, 0x7C>; // ADMUX
+            using ControlA = IOReg<uint8_t, 0x7A>; // ADCSRA
+            using ControlB = IOReg<uint8_t, 0x7B>; // ADCSRB
+            using DataLow = IOReg<uint8_t, 0x78>; // ADCL
+            using DataHigh = IOReg<uint8_t, 0x79>; // ADCH
+            using DigitalInputDisable0 = IOReg<uint8_t, 0x7E>; // DIDR0
 
-            inline void set_voltage_ref(VoltageReference ref) {
+            inline static void set_voltage_ref(VoltageReference ref) {
                 uint8_t vref = static_cast<uint8_t>(ref) << REFS0;
-                *this->multiplexer_selection = (*this->multiplexer_selection & 0b00111111) | vref;
+                uint8_t mask = build_bitmask(REFS1, REFS0);
+                MultiplexerSelection::replace_bits(mask, vref);
             }
 
             inline void left_adjust() {
-                *this->multiplexer_selection |= (1<<ADLAR);
+                MultiplexerSelection::set_bit(ADLAR);
             }
 
-            inline void right_adjust() {
-                *this->multiplexer_selection &= ~(1<<ADLAR);
+            inline static void right_adjust() {
+                MultiplexerSelection::clear_bit(ADLAR);
             }
 
-            inline void set_channel(MultiplexerChannel channel) {
+            inline static void set_channel(MultiplexerChannel channel) {
                 uint8_t chan = static_cast<uint8_t>(channel);
-                *this->multiplexer_selection = (*this->multiplexer_selection & 0b11110000) | chan;
+                uint8_t mask = build_bitmask(MUX3, MUX2, MUX1, MUX0);
+                MultiplexerSelection::replace_bits(mask, chan);
             }
 
-            inline void enable_adc() {
-                *this->control_register_a |= (1<<ADEN);
+            inline static void enable_adc() {
+                ControlA::set_bit(ADEN);
             }
 
-            inline void disable_adc() {
-                *this->control_register_a &= ~(1<<ADEN);
+            inline static void disable_adc() {
+                ControlA::clear_bit(ADEN);
             }
 
-            inline void start_conversion() {
-                *this->control_register_a |= (1<<ADSC);
+            inline static void start_conversion() {
+                ControlA::set_bit(ADSC);
             }
 
-            inline void wait_for_conversion() {
-                while(*this->control_register_a & (1 << ADSC)) {}
+            inline static void wait_for_conversion() {
+                while (ControlA::get_bit(ADSC)) {}
             }
 
-            inline uint16_t read_data() {
-                uint8_t low = *this->data_register_low;
-                uint8_t high = *this->data_register_high;
+            inline static uint16_t read_data() {
+                uint8_t low = DataLow::get_value();
+                uint8_t high = DataHigh::get_value();
 
                 return (high << 8) | low;
             }
 
-            inline void enable_auto_trigger() {
-                *this->control_register_a |= (1<<ADATE);
+            inline static void enable_auto_trigger() {
+                ControlA::set_bit(ADATE);
             }
 
-            inline void disable_auto_trigger() {
-                *this->control_register_a &= ~(1<<ADATE);
+            inline static void disable_auto_trigger() {
+                ControlA::clear_bit(ADATE);
             }
 
-            inline void enable_interrupt() {
-                *this->control_register_a |= (1<<ADIE);
+            inline static void enable_interrupt() {
+                ControlA::set_bit(ADIE);
             }
 
-            inline void disable_interrupt() {
-                *this->control_register_a &= ~(1<<ADIE);
+            inline static void disable_interrupt() {
+                ControlA::clear_bit(ADIE);
             }
 
-            inline void set_prescale(ADCPrescaler prescale) {
+            inline static void set_prescale(ADCPrescaler prescale) {
                 uint8_t ps = static_cast<uint8_t>(prescale);
-                *this->control_register_a = (*this->control_register_a & 0b11111000) | ps;
+                uint8_t mask = build_bitmask(ADPS2, ADPS1, ADPS0);
+                ControlA::replace_bits(mask, ps);
             }
 
-            inline void enable_comparator_multiplexer() {
-                *this->control_register_b |= (1<<ACME);
+            inline static void enable_comparator_multiplexer() {
+                ControlB::set_bit(ACME);
             }
 
-            inline void disable_comparator_multiplexer() {
-                *this->control_register_b &= ~(1<<ACME);
+            inline static void disable_comparator_multiplexer() {
+                ControlB::clear_bit(ACME);
             }
 
-            inline void set_auto_trigger(AutoTriggerSource source) {
+            inline static void set_auto_trigger(AutoTriggerSource source) {
                 uint8_t src = static_cast<uint8_t>(source);
-                *this->control_register_b = (*this->control_register_b & 0b11111000) | src;
+                uint8_t mask = build_bitmask(ADTS2, ADTS1, ADTS0);
+                ControlB::replace_bits(mask, src);
             }
 
             template <typename Pin>
-            inline void disable_digital_input() {
+            inline static void disable_digital_input() {
                 static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
                 static_assert(is_digital<Pin>::value, "Pin must be on a digital port");
-                uint8_t bit = 1 << Pin::analog_channel;
-                *this->digital_input_disable |= bit;
+                DigitalInputDisable0::set_bit(Pin::analog_channel);
             }
 
             template <typename Pin>
-            inline void enable_digital_input() {
+            inline static void enable_digital_input() {
                 static_assert(is_analog_adc<Pin>::value, "Pin must be on the ADC");
                 static_assert(is_digital<Pin>::value, "Pin must be on a digital port");
-                uint8_t bit = 1 << Pin::analog_channel;
-                *this->digital_input_disable &= ~bit;
+                DigitalInputDisable0::clear_bit(Pin::analog_channel);
             }
     };
 }

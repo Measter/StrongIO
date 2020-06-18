@@ -197,17 +197,14 @@ namespace IO {
             inline AnalogInBase() {}
         public:
             inline void start_read() {
-                Analog::AnalogDigitalConverter adc;
-
-                adc.set_voltage_ref(analog_reference);
-                adc.set_channel(Pin::analog_channel);
-                adc.start_conversion();
+                Analog::AnalogDigitalConverter::set_voltage_ref(analog_reference);
+                Analog::AnalogDigitalConverter::set_channel(Pin::analog_channel);
+                Analog::AnalogDigitalConverter::start_conversion();
             }
 
             inline uint16_t finish_read() {
-                Analog::AnalogDigitalConverter adc;
-                adc.wait_for_conversion();
-                return adc.read_data();
+                Analog::AnalogDigitalConverter::wait_for_conversion();
+                return Analog::AnalogDigitalConverter::read_data();
             }
 
             inline uint16_t read() {
