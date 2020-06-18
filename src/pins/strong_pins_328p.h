@@ -401,71 +401,72 @@ namespace Analog {
 
     class AnalogComparator {
         public:
-            volatile uint8_t* adc_control_register = &ADCSRB;
-            volatile uint8_t* comp_control_register = &ACSR;
-            volatile uint8_t* digital_disable_register = &DIDR1;
+            using ADCControl = IOReg<uint8_t, 0x7B>; // ADCSRB
+            using CompControl = IOReg<uint8_t, 0x30 + __SFR_OFFSET>; // ACSR
+            using DigitalDisable = IOReg<uint8_t, 0x7F>; // DIDR1
 
-            inline void disable_ain0_digital_input() {
-                *this->digital_disable_register |= (1<<AIN0D);
+            inline static void disable_ain0_digital_input() {
+                DigitalDisable::set_bit(AIN0D);
             }
 
-            inline void enable_ain0_digital_input() {
-                *this->digital_disable_register &= ~(1<<AIN0D);
+            inline static void enable_ain0_digital_input() {
+                DigitalDisable::clear_bit(AIN0D);
             }
 
-            inline void disable_ain1_digital_input() {
-                *this->digital_disable_register |= (1<<AIN1D);
+            inline static void disable_ain1_digital_input() {
+                DigitalDisable::set_bit(AIN1D);
             }
 
-            inline void enable_ain1_digital_input() {
-                *this->digital_disable_register &= ~(1<<AIN1D);
+            inline static void enable_ain1_digital_input() {
+                DigitalDisable::clear_bit(AIN1D);
             }
 
-            inline void disable_comparator() {
-                *this->comp_control_register &= ~(1<<ACD);
+            inline static void disable_comparator() {
+                CompControl::clear_bit(ACD);
             }
 
-            inline void enable_comparator() {
-                *this->comp_control_register |= (1<<ACD);
+            inline static void enable_comparator() {
+                CompControl::set_bit(ACD);
             }
 
-            inline void disable_bandgap_ref() {
-                *this->comp_control_register &= ~(1<<ACBG);
+            inline static void disable_bandgap_ref() {
+                CompControl::clear_bit(ACBG);
             }
 
-            inline void enable_bandgap_ref() {
-                *this->comp_control_register |= (1<<ACBG);
+            inline static void enable_bandgap_ref() {
+                CompControl::set_bit(ACBG);
             }
 
-            inline void disable_interrupt() {
-                *this->comp_control_register &= ~(1<<ACIE);
+            inline static void disable_interrupt() {
+                CompControl::clear_bit(ACIE);
             }
 
-            inline void enable_interrupt() {
-                *this->comp_control_register |= (1<<ACIE);
+            inline static void enable_interrupt() {
+                CompControl::set_bit(ACIE);
             }
 
-            inline void disable_input_capture() {
-                *this->comp_control_register &= ~(1<<ACIC);
+            inline static void disable_input_capture() {
+                CompControl::clear_bit(ACIC);
             }
 
-            inline void enable_input_capture() {
-                *this->comp_control_register |= (1<<ACIC);
+            inline static void enable_input_capture() {
+                CompControl::set_bit(ACIC);
             }
 
-            inline void set_interrupt_mode(ComparatorInterruptMode mode) {
+            inline static void set_interrupt_mode(ComparatorInterruptMode mode) {
                 // Datasheet says we must disable the interrupt while changing these bits.
-                uint8_t old_interrupt = *this->comp_control_register & (1<<ACIE);
-                this->disable_interrupt();
+                uint8_t old_interrupt = CompControl::get_bit(ACIE);
+                disable_interrupt();
 
                 uint8_t int_mode = static_cast<uint8_t>(mode);
-                *this->comp_control_register = (*this->comp_control_register & 0b11111100) | int_mode;
+                int8_t mask = build_bitmask(ACIS1, ACIS0);
+                CompControl::replace_bits(mask, int_mode);
 
-                *this->comp_control_register |= old_interrupt;
+                *CompControl::ptr() |= old_interrupt;
             }
 
-            inline bool is_positive_higher() {
-                return (*this->comp_control_register & (1<<ACO)) != 0;
+            inline static bool is_positive_higher() {
+                return CompControl::get_bit(ACO) != 0;
             }
     };
 

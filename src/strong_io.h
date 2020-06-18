@@ -275,8 +275,7 @@ namespace IO {
             }
 
             inline bool is_positive_higher() {
-                typename Positive::AnalogCompPositive comp;
-                return comp.is_positive_higher();
+                return Positive::AnalogCompPositive::is_positive_higher();
             }
     };
 
