@@ -1,6 +1,56 @@
 #ifndef STRONG_IO_TRAITS_H
 #define STRONG_IO_TRAITS_H
 
+#include <avr/io.h>
+
+template <typename T>
+constexpr T combine_bits() {
+    return 0;
+}
+
+template <typename T, typename... Type>
+constexpr T combine_bits(T bit, Type... bits) {
+    return (1 << bit) | combine_bits(bits...);
+}
+
+template <typename Type, uint16_t Addr, Type Reset = 0>
+struct IOReg {
+    public:
+        inline static constexpr volatile Type* ptr() {
+            return reinterpret_cast<volatile Type*>(Addr);
+        }
+
+        inline static constexpr void set_value(Type val) {
+            *ptr() = val;
+        }
+
+        inline static constexpr Type get_value(Type val) {
+            return *ptr();
+        }
+
+        inline static constexpr void set_bit(uint8_t bit) {
+            *ptr() |= (1 << bit);
+        }
+
+        inline static constexpr void clear_bit(uint8_t bit) {
+            *ptr() &= (1 << bit);
+        }
+
+        inline static constexpr void replace_bits(Type mask, Type new_data) {
+            *ptr() |= (*ptr() & ~mask) | mask;
+        }
+
+        template <typename... Bits>
+        inline static constexpr void set_bits(Bits... bits) {
+            *ptr() |= combine_bits(bits...);
+        }
+
+        template <typename... Bits>
+        inline static constexpr void clear_bits(Bits... bits) {
+            *ptr() &= ~combine_bits(bits...);
+        }
+};
+
 /// My thanks to /u/boredcircuits on Reddit/r/cpp_questions
 // for basically giving me the answer to making this work.
 
