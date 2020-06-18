@@ -28,6 +28,10 @@ struct IOReg {
             return *ptr();
         }
 
+        inline static constexpr Type get_bit(uint8_t bit) {
+            return *ptr() & (1 << bit);
+        }
+
         inline static constexpr void set_bit(uint8_t bit) {
             *ptr() |= (1 << bit);
         }

@@ -2,7 +2,7 @@
 #define STRONG_IO_H
 
 #include "strong_pins.h"
-#include "type_traits.h"
+#include "common.h"
 
 struct Pullup {
 public:
@@ -36,15 +36,11 @@ namespace IO {
         protected:
             inline DigitalOutBase() {}
             inline void inner_init() {
-                typename Pin::Port port;
-                *port.mode_register |= Pin::digital_pin_bit;
-                // Datasheet says there should be a NOP after configuring the pin for syncronization.
-                __asm__ volatile ("nop");
+                Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
             }
         public:
             inline void toggle() {
-                typename Pin::Port port;
-                *port.input_register |= Pin::digital_pin_bit;
+                Pin::Port::InputRegister::set_bit(Pin::digital_pin_bit);
             }
 
             inline void write(PinState state) {
@@ -57,13 +53,11 @@ namespace IO {
             }
 
             inline void set_high() {
-                typename Pin::Port port;
-                *port.output_register |= Pin::digital_pin_bit;
+                Pin::Port::OutputRegister::set_bit(Pin::digital_pin_bit);
             }
 
             inline void set_low() {
-                typename Pin::Port port;
-                *port.output_register &= ~Pin::digital_pin_bit;
+                Pin::Port::OutputRegister::clear_bit(Pin::digital_pin_bit);
             }
 
             template<class ClockPin>
@@ -125,21 +119,19 @@ namespace IO {
         protected: 
             inline DigitalInBase() {}
             inline void inner_init() {
-                typename Pin::Port port;
-                *port.mode_register &= ~Pin::digital_pin_bit;
+                Pin::Port::ModeRegister::clear_bit(Pin::digital_pin_bit);
 
                 if (Mode::is_pullup)
-                    *port.output_register |= Pin::digital_pin_bit;
+                    Pin::Port::OutputRegister::set_bit(Pin::digital_pin_bit);
                 else
-                    *port.output_register &= ~Pin::digital_pin_bit;
+                    Pin::Port::OutputRegister::clear_bit(Pin::digital_pin_bit);
 
                 // Datasheet says there should be a NOP after configuring the pin.
                 __asm__ volatile ("nop");
             }
         public:
             inline PinState read() {
-                typename Pin::Port port;
-                if ((*port.input_register & Pin::digital_pin_bit) != 0)
+                if (Pin::Port::InputRegister::get_bit(Pin::digital_pin_bit) != 0)
                     return PinState::High;
                 return PinState::Low;
             }
@@ -238,14 +230,8 @@ namespace IO {
     class AnalogIn<Pin, typename enable_if<is_digital<Pin>::value>::type> : public AnalogInBase<Pin> {
         public:
             inline AnalogIn() {
-                // Reset pin to tri-state.
-                typename Pin::Port port;
-                *port.mode_register &= ~Pin::digital_pin_bit;
-                *port.output_register &= ~Pin::digital_pin_bit;
-
-                // Datasheet says there should be a NOP after configuring the pin.
-                __asm__ volatile ("nop");
-                return;
+                // Reset pin to input, no pullup, to ensure no interference.
+                AnalogIn<Pin, NoPullup> p;
             }
     };
 
@@ -255,10 +241,7 @@ namespace IO {
         public:
             inline PWM() {
                 // First configure the pin to output.
-                typename Pin::Port port;
-                *port.mode_register |= Pin::digital_pin_bit;
-                // Datasheet says there should be a NOP after configuring the pin for syncronization.
-                __asm__ volatile ("nop");
+                Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
 
                 // We won't enable the timer here.
                 // We'll instead do what the Arduino IO does, and conditionally enable/disable
@@ -266,17 +249,15 @@ namespace IO {
             }
 
             inline void set_duty(uint8_t duty) {
-                typename Pin::Port port;
                 typename Pin::TimerChannel channel;
-                typename Pin::TimerChannel::Timer timer;
                 if (duty == 0) {
                     // Disable timer.
                     channel.set_mode(Timers::CompareOutputMode::Mode0);
-                    *port.output_register &= ~Pin::digital_pin_bit;
+                    Pin::Port::OutputRegister::clear_bit(Pin::digital_pin_bit);
                 } else if (duty == 255) {
                     // Disable timer.
                     channel.set_mode(Timers::CompareOutputMode::Mode0);
-                    *port.output_register |= Pin::digital_pin_bit;
+                    Pin::Port::OutputRegister::set_bit(Pin::digital_pin_bit);
                 } else {
                     channel.set_mode(Timers::CompareOutputMode::Mode2);
                     channel.set_output_compare(duty);
@@ -292,9 +273,8 @@ namespace IO {
             inline AnalogComp() {
                 // Set both pins to input, no pullup.
                 // On the 328P and 2560 these are both on the same port, so do both pins in one operation.
-                typename Positive::Port port;
-                *port.mode_register &= ~(Positive::digital_pin_bit | Negative::digital_pin_bit);
-                *port.output_register &= ~(Positive::digital_pin_bit | Negative::digital_pin_bit);
+                Positive::Port::ModeRegister::clear_bits(Positive::digital_pin_bit, Negative::digital_pin_bit);
+                Positive::Port::OutputRegister::clear_bits(Positive::digital_pin_bit, Negative::digital_pin_bit);
             }
 
             inline bool is_positive_higher() {
@@ -309,9 +289,7 @@ namespace IO {
         public:
             inline void init() {
                 // Setting pin to output.
-                typename Pin::Port port;
-                *port.mode_register |= Pin::digital_pin_bit;
-                // Shouldn't need a NOP here. Configuring the time will take long enough.
+                Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
 
                 typename Pin::TimerChannel::Timer timer;
                 using WaveformMode = typename Pin::TimerChannel::Timer::WaveformMode;

@@ -14,28 +14,28 @@
 #define STRONG_PINS_328P_H
 
 #include <avr/io.h>
-#include "type_traits.h"
+#include "common.h"
 
 namespace Ports {
     class PortB {
         public:
-            volatile uint8_t* mode_register = &DDRB;
-            volatile uint8_t* output_register = &PORTB;
-            volatile uint8_t* input_register = &PINB;
+            using InputRegister = IOReg<uint8_t, 0x03 + __SFR_OFFSET>; // PIN
+            using ModeRegister = IOReg<uint8_t, 0x04 + __SFR_OFFSET>; // DDR
+            using OutputRegister = IOReg<uint8_t, 0x05 + __SFR_OFFSET>; // PORT
     };
 
     class PortC {
         public:
-            volatile uint8_t* mode_register = &DDRC;
-            volatile uint8_t* output_register = &PORTC;
-            volatile uint8_t* input_register = &PINC;
+            using InputRegister = IOReg<uint8_t, 0x06 + __SFR_OFFSET>; // PIN
+            using ModeRegister = IOReg<uint8_t, 0x07 + __SFR_OFFSET>; // DDR
+            using OutputRegister = IOReg<uint8_t, 0x08 + __SFR_OFFSET>; // PORT
     };
 
     class PortD {
         public:
-            volatile uint8_t* mode_register = &DDRD;
-            volatile uint8_t* output_register = &PORTD;
-            volatile uint8_t* input_register = &PIND;
+            using InputRegister = IOReg<uint8_t, 0x09 + __SFR_OFFSET>; // PIN
+            using ModeRegister = IOReg<uint8_t, 0x0A + __SFR_OFFSET>; // DDR
+            using OutputRegister = IOReg<uint8_t, 0x0B + __SFR_OFFSET>; // PORT
     };
 }
 
@@ -562,21 +562,21 @@ namespace Pin {
     class D0 {
         public:
             using Port = Ports::PortD;
-            static constexpr uint8_t digital_pin_bit = 1<<PD0;
+            static constexpr uint8_t digital_pin_bit = PD0;
             static constexpr uint8_t id = 0;
     };
 
     class D1 {
         public:
             using Port = Ports::PortD;
-            static constexpr uint8_t digital_pin_bit = 1<<PD1;
+            static constexpr uint8_t digital_pin_bit = PD1;
             static constexpr uint8_t id = 1;
     };
 
     class D2 {
         public:
             using Port = Ports::PortD;
-            static constexpr uint8_t digital_pin_bit = 1<<PD2;
+            static constexpr uint8_t digital_pin_bit = PD2;
             static constexpr uint8_t id = 2;
     };
 
@@ -584,14 +584,14 @@ namespace Pin {
         public:
             using Port = Ports::PortD;
             using TimerChannel = Timers::ChannelB<Timers::Timer2>;
-            static constexpr uint8_t digital_pin_bit = 1<<PD3;
+            static constexpr uint8_t digital_pin_bit = PD3;
             static constexpr uint8_t id = 3;
     };
 
     class D4 {
         public:
             using Port = Ports::PortD;
-            static constexpr uint8_t digital_pin_bit = 1<<PD4;
+            static constexpr uint8_t digital_pin_bit = PD4;
             static constexpr uint8_t id = 4;
     };
 
@@ -599,7 +599,7 @@ namespace Pin {
         public:
             using Port = Ports::PortD;
             using TimerChannel = Timers::ChannelB<Timers::Timer0>;
-            static constexpr uint8_t digital_pin_bit = 1<<PD5;
+            static constexpr uint8_t digital_pin_bit = PD5;
             static constexpr uint8_t id = 5;
     };
 
@@ -609,7 +609,7 @@ namespace Pin {
             using TimerChannel = Timers::ChannelA<Timers::Timer0>;
             using Tone = void;
             using AnalogCompPositive = Analog::AnalogComparator;
-            static constexpr uint8_t digital_pin_bit = 1<<PD6;
+            static constexpr uint8_t digital_pin_bit = PD6;
             static constexpr uint8_t id = 6;
     };
 
@@ -617,14 +617,14 @@ namespace Pin {
         public:
             using Port = Ports::PortD;
             using AnalogCompNegative = Analog::AnalogComparator;
-            static constexpr uint8_t digital_pin_bit = 1<<PD7;
+            static constexpr uint8_t digital_pin_bit = PD7;
             static constexpr uint8_t id = 7;
     };
 
     class D8 {
         public:
             using Port = Ports::PortB;
-            static constexpr uint8_t digital_pin_bit = 1<<PB0;
+            static constexpr uint8_t digital_pin_bit = PB0;
             static constexpr uint8_t id = 8;
     };
 
@@ -634,7 +634,7 @@ namespace Pin {
             using Port = Ports::PortB;
             using TimerChannel = Timers::ChannelA<Timers::Timer1>;
             using Tone = void;
-            static constexpr uint8_t digital_pin_bit = 1<<PB1;
+            static constexpr uint8_t digital_pin_bit = PB1;
             static constexpr uint8_t id = 9;
     };
 
@@ -642,7 +642,7 @@ namespace Pin {
         public:
             using Port = Ports::PortB;
             using TimerChannel = Timers::ChannelB<Timers::Timer1>;
-            static constexpr uint8_t digital_pin_bit = 1<<PB2;
+            static constexpr uint8_t digital_pin_bit = PB2;
             static constexpr uint8_t id = 10;
     };
 
@@ -651,21 +651,21 @@ namespace Pin {
             using Port = Ports::PortB;
             using TimerChannel = Timers::ChannelA<Timers::Timer2>;
             using Tone = void;
-            static constexpr uint8_t digital_pin_bit = 1<<PB3;
+            static constexpr uint8_t digital_pin_bit = PB3;
             static constexpr uint8_t id = 11;
     };
 
     class D12 {
         public:
             using Port = Ports::PortB;
-            static constexpr uint8_t digital_pin_bit = 1<<PB4;
+            static constexpr uint8_t digital_pin_bit = PB4;
             static constexpr uint8_t id = 12;
     };
 
     class D13 {
         public:
             using Port = Ports::PortB;
-            static constexpr uint8_t digital_pin_bit = 1<<PB5;
+            static constexpr uint8_t digital_pin_bit = PB5;
             static constexpr uint8_t id = 13;
     };
 
@@ -675,7 +675,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC0;
+            static constexpr uint8_t digital_pin_bit = PC0;
             static constexpr uint8_t id = 14;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC0;
     };
@@ -684,7 +684,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC1;
+            static constexpr uint8_t digital_pin_bit = PC1;
             static constexpr uint8_t id = 15;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC1;
     };
@@ -693,7 +693,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC2;
+            static constexpr uint8_t digital_pin_bit = PC2;
             static constexpr uint8_t id = 16;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC2;
     };
@@ -702,7 +702,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC3;
+            static constexpr uint8_t digital_pin_bit = PC3;
             static constexpr uint8_t id = 17;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC3;
     };
@@ -711,7 +711,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC4;
+            static constexpr uint8_t digital_pin_bit = PC4;
             static constexpr uint8_t id = 18;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC4;
     };
@@ -720,7 +720,7 @@ namespace Pin {
         public:
             using AnalogConv = void;
             using Port = Ports::PortC;
-            static constexpr uint8_t digital_pin_bit = 1<<PC5;
+            static constexpr uint8_t digital_pin_bit = PC5;
             static constexpr uint8_t id = 19;
             static constexpr Analog::MultiplexerChannel analog_channel = Analog::MultiplexerChannel::ADC5;
     };
