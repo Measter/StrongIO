@@ -33,7 +33,7 @@ struct IOReg {
             *ptr() = val;
         }
 
-        inline static constexpr Type get_value(Type val) {
+        inline static constexpr Type get_value() {
             return *ptr();
         }
 
