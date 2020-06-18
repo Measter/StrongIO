@@ -403,22 +403,22 @@ namespace Analog {
         public:
             using ADCControl = IOReg<uint8_t, 0x7B>; // ADCSRB
             using CompControl = IOReg<uint8_t, 0x30 + __SFR_OFFSET>; // ACSR
-            using DigitalDisable = IOReg<uint8_t, 0x7F>; // DIDR1
+            using DigitalInputDisable1 = IOReg<uint8_t, 0x7F>; // DIDR1
 
             inline static void disable_ain0_digital_input() {
-                DigitalDisable::set_bit(AIN0D);
+                DigitalInputDisable1::set_bit(AIN0D);
             }
 
             inline static void enable_ain0_digital_input() {
-                DigitalDisable::clear_bit(AIN0D);
+                DigitalInputDisable1::clear_bit(AIN0D);
             }
 
             inline static void disable_ain1_digital_input() {
-                DigitalDisable::set_bit(AIN1D);
+                DigitalInputDisable1::set_bit(AIN1D);
             }
 
             inline static void enable_ain1_digital_input() {
-                DigitalDisable::clear_bit(AIN1D);
+                DigitalInputDisable1::clear_bit(AIN1D);
             }
 
             inline static void disable_comparator() {
