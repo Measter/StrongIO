@@ -50,7 +50,7 @@ struct IOReg {
         }
 
         inline static constexpr void replace_bits(Type mask, Type new_data) {
-            *ptr() |= (*ptr() & ~mask) | mask;
+            *ptr() |= (*ptr() & ~mask) | new_data;
         }
 
         template <typename... Bits>
