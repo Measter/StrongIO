@@ -295,19 +295,19 @@ namespace IO {
             }
 
             inline void set_tone(uint16_t frequency) {
-                typename Pin::TimerChannel::Timer timer;
+                using Timer = typename Pin::TimerChannel::Timer;
                 using PrescaleMode = typename Pin::TimerChannel::Timer::PrescaleMode;
 
                 frequency *= 2;
                 uint16_t target_prescale = F_CPU / 256 / frequency;
                 uint8_t mode;
-                for (mode = 0; mode < timer.prescale_count; mode++) {
-                    if (pgm_read_word(timer.prescale_values + mode) >= target_prescale) {
+                for (mode = 0; mode < Timer::prescale_count; mode++) {
+                    if (pgm_read_word(Timer::prescale_values() + mode) >= target_prescale) {
                         break;
                     }
                 }
 
-                uint8_t ocr = F_CPU / pgm_read_word(timer.prescale_values + mode) / frequency - 1;
+                uint8_t ocr = F_CPU / pgm_read_word(Timer::prescale_values() + mode) / frequency - 1;
                 Pin::TimerChannel::set_output_compare(ocr);
                 Pin::TimerChannel::Timer::set_prescale(static_cast<PrescaleMode>(mode+1));
 

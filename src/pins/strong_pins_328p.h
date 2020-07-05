@@ -113,8 +113,10 @@ namespace Timers {
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
-            const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
-            const uint16_t* prescale_values = timer_01_prescale_values;
+            static constexpr uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
+            inline static constexpr const uint16_t* prescale_values() {
+                return timer_01_prescale_values;
+            }
 
             using OutputCompareA = IOReg<CompareType, 0x27 + __SFR_OFFSET>; //OCR0A
             static constexpr uint8_t channel_a_mode_bit0 = COM0A0;
@@ -178,8 +180,10 @@ namespace Timers {
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
-            const uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
-            const uint16_t* prescale_values = timer_01_prescale_values;
+            static constexpr uint8_t prescale_count = TIMER_01_PRESCALE_COUNT;
+            inline static constexpr const uint16_t* prescale_values() {
+                return timer_01_prescale_values;
+            }
 
             using OutputCompareA = IOReg<CompareType, 0x88>; // OCR1A
             using OutputCompareALow = IOReg<uint8_t, 0x88>; // OCR1AL
@@ -243,8 +247,10 @@ namespace Timers {
 
             // Used in the loop for when searching for a prescale/output compare value
             // in tone output.
-            const uint8_t prescale_count = TIMER_2_PRESCALE_COUNT;
-            const uint16_t* prescale_values = timer_2_prescale_values;
+            static constexpr uint8_t prescale_count = TIMER_2_PRESCALE_COUNT;
+            inline static constexpr const uint16_t* prescale_values() {
+                return timer_2_prescale_values;
+            }
 
             using OutputCompareA = IOReg<CompareType, 0xB3>; // OCR2A
             static constexpr uint8_t channel_a_mode_bit0 = COM2A0;
