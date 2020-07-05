@@ -1,6 +1,7 @@
 #ifndef STRONG_IO_H
 #define STRONG_IO_H
 
+#include "strong_periphs.h"
 #include "strong_pins.h"
 #include "common.h"
 
