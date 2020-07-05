@@ -13,11 +13,6 @@ struct NoPullup {
     static constexpr bool is_pullup = false;
 };
 
-enum class BitOrder {
-    MSBFirst,
-    LSBFirst,
-};
-
 enum class PinState {
     Low,
     High,
@@ -62,11 +57,11 @@ namespace IO {
             }
 
             template<class ClockPin>
-            inline void shift_out(DigitalOutBase<ClockPin>& clockPin, BitOrder bitOrder, uint8_t value) {
+            inline void shift_out(DigitalOutBase<ClockPin>& clockPin, Serials::BitOrder bitOrder, uint8_t value) {
                 static_assert(is_digital<ClockPin>::value, "clockPin must be a DigitalOut");
                 // Having the redundant loop is more faster because there's less branching
                 // inside the loop.
-                if (bitOrder == BitOrder::LSBFirst) {
+                if (bitOrder == Serials::BitOrder::LSBFirst) {
                     for (uint8_t i = 0; i < 8; i++) {
                         if (value & 0x1)
                             this->set_high();
@@ -137,10 +132,10 @@ namespace IO {
             }
 
             template<class ClockPin>
-            inline uint8_t shift_in(DigitalOutBase<ClockPin> clockPin, BitOrder bitOrder) {
+            inline uint8_t shift_in(DigitalOutBase<ClockPin> clockPin, Serials::BitOrder bitOrder) {
                 // Having the redundant loop ends up being faster due to less branching inside the loop.
                 uint8_t value = 0;
-                if (bitOrder == BitOrder::LSBFirst) {
+                if (bitOrder == Serials::BitOrder::LSBFirst) {
                     uint8_t bit = 0x1;
                     for (uint8_t i = 0; i < 8; i++) {
                         clockPin.toggle();

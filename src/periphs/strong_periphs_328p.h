@@ -581,5 +581,98 @@ namespace Analog {
     };
 }
 
+namespace Serials {
+    enum class BitOrder {
+        MSBFirst = 0b0,
+        LSBFirst = 0b00100000,
+    };
+
+    enum class SPIClockPolarity {
+        LeadingRising   = 0b0000,
+        LeadingFalling  = 0b1000,
+    };
+
+    enum class SPIClockPhase {
+        LeadingSample   = 0b000,
+        LeadingSetup    = 0b100,
+    };
+
+    enum class SPIClockRate {
+        CR4     = 0b00,
+        CR16    = 0b01,
+        CR64    = 0b10,
+        CR128   = 0b11,
+    };
+
+    class SPI {
+        public:
+            using ControlRegister = IOReg<uint8_t, 0x2C + __SFR_OFFSET>; // SPCR0
+            using StatusRegister = IOReg<uint8_t, 0x2D + __SFR_OFFSET>; // SPSR0
+            using DataRegister = IOReg<uint8_t, 0x2E + __SFR_OFFSET>; // SPDR0
+
+            inline static void enable_interrupt() {
+                ControlRegister::set_bit(SPIE);
+            }
+
+            inline static void disable_interrupt() {
+                ControlRegister::clear_bit(SPIE);
+            }
+
+            inline static void enable_spi() {
+                ControlRegister::set_bit(SPE);
+            }
+
+            inline static void disable_spi() {
+                ControlRegister::set_bit(SPE);
+            }
+
+            inline static void set_data_order(BitOrder order) {
+                uint8_t val = static_cast<uint8_t>(order);
+                uint8_t mask = build_bitmask(DORD);
+                ControlRegister::replace_bits(mask, val);
+            }
+
+            inline static void set_master() {
+                ControlRegister::set_bit(MSTR);
+            }
+
+            inline static void set_slave() {
+                ControlRegister::clear_bit(MSTR);
+            }
+
+            inline static void set_clock_polarity(SPIClockPolarity pol) {
+                uint8_t val = static_cast<uint8_t>(pol);
+                uint8_t mask = build_bitmask(CPOL);
+                ControlRegister::replace_bits(mask, val);
+            }
+
+            inline static void set_clock_phase(SPIClockPhase phase) {
+                uint8_t val = static_cast<uint8_t>(phase);
+                uint8_t mask = build_bitmask(CPHA);
+                ControlRegister::replace_bits(mask, val);
+            }
+
+            inline static void set_clock_rate(SPIClockRate rate) {
+                uint8_t val = static_cast<uint8_t>(rate);
+                uint8_t mask = build_bitmask(SPR0, SPR1);
+                ControlRegister::replace_bits(mask, val);
+            }
+
+            inline static void set_double_speed() {
+                StatusRegister::set_bit(SPI2X);
+            }
+
+            inline static void set_normal_speed() {
+                StatusRegister::clear_bit(SPI2X);
+            }
+
+            inline static void wait_for_finish() {
+                // Apparently this nop can make it faster by causing the loop to
+                // *not* run if the data is shifted fast enough.
+                __asm__ volatile ("nop");
+                while(!StatusRegister::get_bit(SPIF)) {}
+            }
+    };
+}
 
 #endif //STRONG_PERIPHERALS_328P_H
