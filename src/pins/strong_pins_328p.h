@@ -14,6 +14,7 @@
 #define STRONG_PINS_328P_H
 
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include "common.h"
 
 namespace Ports {
