@@ -243,6 +243,22 @@ namespace IO {
                 // it based on whether the input is 0, 255, or between.
             }
 
+            inline PWM(
+                typename Pin::TimerChannel::Timer::PrescaleMode prescale,
+                typename Pin::TimerChannel::Timer::WaveformMode waveform
+            ) {
+                // First configure the pin to output.
+                Pin::Port::ModeRegister::set_bit(Pin::digital_pin_bit);
+
+                using Timer = typename Pin::TimerChannel::Timer;
+                Timer::set_prescale(prescale);
+                Timer::set_waveform(waveform);
+
+                // We won't enable the timer here.
+                // We'll instead do what the Arduino IO does, and conditionally dis/connect
+                // it based on whether the input is 0, 255, or between.
+            }
+
             inline void set_duty(uint8_t duty) {
                 if (duty == 0) {
                     // Disconnect timer.
