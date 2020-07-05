@@ -49,8 +49,13 @@ struct IOReg {
             *ptr() &= (1 << bit);
         }
 
+        // Note that the mask is inverted inside the function, and should
+        // have the bits to be replaced set.
+        // E.g. To replace bits 2 and 4, the mask should be 0b00010100
+        // Generally use the build_bitmask function to build the mask.
         inline static constexpr void replace_bits(Type mask, Type new_data) {
-            *ptr() = ((*ptr() & ~mask) | new_data);
+            Type masked_reg = *ptr() & ~mask;
+            *ptr() = (masked_reg | new_data);
         }
 
         template <typename... Bits>
