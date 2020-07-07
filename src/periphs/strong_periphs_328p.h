@@ -632,11 +632,11 @@ namespace Serials {
                 ControlRegister::replace_bits(mask, val);
             }
 
-            inline static void set_master() {
+            inline static void enable_master() {
                 ControlRegister::set_bit(MSTR);
             }
 
-            inline static void set_slave() {
+            inline static void disable_slave() {
                 ControlRegister::clear_bit(MSTR);
             }
 
@@ -658,11 +658,11 @@ namespace Serials {
                 ControlRegister::replace_bits(mask, val);
             }
 
-            inline static void set_double_speed() {
+            inline static void enable_double_speed() {
                 StatusRegister::set_bit(SPI2X);
             }
 
-            inline static void set_normal_speed() {
+            inline static void disable_double_speed() {
                 StatusRegister::clear_bit(SPI2X);
             }
 
