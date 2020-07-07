@@ -582,12 +582,12 @@ namespace Analog {
 }
 
 namespace Serials {
-    enum class BitOrder {
-        MSBFirst = 0b0,
-        LSBFirst = 0b00100000,
+    enum class SPIBitOrder {
+        MSBFirst,
+        LSBFirst,
     };
 
-    enum class SPIClockPolarity {
+    enum class ClockPolarity {
         LeadingRising   = 0b0000,
         LeadingFalling  = 0b1000,
     };
@@ -626,10 +626,12 @@ namespace Serials {
                 ControlRegister::set_bit(SPE);
             }
 
-            inline static void set_data_order(BitOrder order) {
-                uint8_t val = static_cast<uint8_t>(order);
-                uint8_t mask = build_bitmask(DORD);
-                ControlRegister::replace_bits(mask, val);
+            inline static void set_data_order(SPIBitOrder order) {
+                if(order == SPIBitOrder::LSBFirst) {
+                    ControlRegister::set_bit(DORD);
+                } else {
+                    ControlRegister::clear_bit(DORD);
+                }
             }
 
             inline static void enable_master() {
@@ -640,7 +642,7 @@ namespace Serials {
                 ControlRegister::clear_bit(MSTR);
             }
 
-            inline static void set_clock_polarity(SPIClockPolarity pol) {
+            inline static void set_clock_polarity(ClockPolarity pol) {
                 uint8_t val = static_cast<uint8_t>(pol);
                 uint8_t mask = build_bitmask(CPOL);
                 ControlRegister::replace_bits(mask, val);
@@ -673,6 +675,228 @@ namespace Serials {
                 while(!StatusRegister::get_bit(SPIF)) {}
             }
     };
+
+    enum class USARTMode {
+        Async       = 0b00000000,
+        Sync        = 0b01000000,
+        MasterSPI   = 0b11000000,
+    };
+
+    enum class USARTParityMode {
+        Disabled    = 0b000000,
+        Even        = 0b100000,
+        Odd         = 0b110000,
+    };
+
+    enum class USARTStopBit {
+        Bits1,
+        Bits2,
+    };
+
+    enum class USARTCharSize {
+        Bits5 = 0b0000,
+        Bits6 = 0b0010,
+        Bits7 = 0b0100,
+        Bits8 = 0b0110,
+        Bits9 = 0b1110,
+    };
+
+    enum class USARTClockPolarity {
+        Rising,
+        Falling,
+    };
+    
+    class USART {
+        public:
+            using DataRegister = IOReg<uint8_t, 0xC6>; // UDR0
+            using ControlStatusRegisterA = IOReg<uint8_t, 0xC0, 0x20>; // UCSR0A
+            using ControlStatusRegisterB = IOReg<uint8_t, 0xC1>; // UCSR0B
+            using ControlStatusRegisterC = IOReg<uint8_t, 0xC2, 0x06>; // UCSR0C
+
+            using BaudRateRegister = IOReg<uint16_t, 0xC4>; // UBRR0
+            using BaudRateRegisterLow = IOReg<uint8_t, 0xC4>; // UBRR0L
+            using BaudRateRegisterHigh = IOReg<uint8_t, 0xC5>; // UBRR0H
+
+            /// Control Register A
+
+            inline static bool is_receive_complete() {
+                return ControlStatusRegisterA::get_bit(RXC0) != 0;
+            }
+
+            inline static void wait_for_receive() {
+                while (!is_receive_complete()) {}
+            }
+
+            inline static bool is_transmit_complete() {
+                return ControlStatusRegisterA::get_bit(TXC0) != 0;
+            }
+
+            inline static void wait_for_transmit() {
+                while (!is_transmit_complete()) {}
+            }
+
+            inline static bool is_data_register_empty() {
+                return ControlStatusRegisterA::get_bit(UDRE0) != 0;
+            }
+
+            // Set this to 0 when writing to Control A.
+            inline static bool had_frame_error() {
+                return ControlStatusRegisterA::get_bit(FE0) != 0;
+            }
+
+            //Set this to 0 when writing to Control A.
+            inline static bool had_data_overrun() {
+                return ControlStatusRegisterA::get_bit(DOR0) != 0;
+            }
+
+            // Set this to 0 when writing to Control A.
+            inline static bool had_parity_error() {
+                return ControlStatusRegisterA::get_bit(UPE0) != 0;
+            }
+
+            inline static void enable_double_transmit_speed() {
+                // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
+                uint8_t mask = build_bitmask(FE0, DOR0, UPE0, U2X0);
+                uint8_t val = build_bitmask(U2X0);
+                ControlStatusRegisterA::replace_bits(mask, val);
+            }
+
+            inline static void disable_double_transmit_speed() {
+                // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
+                uint8_t mask = build_bitmask(FE0, DOR0, UPE0, U2X0);
+                ControlStatusRegisterA::replace_bits(mask, 0);
+            }
+
+            inline static void enable_multi_proc() {
+                // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
+                uint8_t mask = build_bitmask(FE0, DOR0, UPE0, MPCM0);
+                uint8_t val = build_bitmask(MPCM0);
+                ControlStatusRegisterA::replace_bits(mask, val);
+            }
+
+            inline static void disable_multi_proc() {
+                // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
+                uint8_t mask = build_bitmask(FE0, DOR0, UPE0, MPCM0);
+                ControlStatusRegisterA::replace_bits(mask, 0);
+            }
+    
+            
+            /// Control Register B
+
+            inline static void enable_receive_interrupt() {
+                ControlStatusRegisterB::set_bit(RXCIE0);
+            }
+
+            inline static void disable_receive_interrupt() {
+                ControlStatusRegisterB::clear_bit(RXCIE0);
+            }
+            
+            inline static void enable_transmit_interrupt() {
+                ControlStatusRegisterB::set_bit(TXCIE0);
+            }
+
+            inline static void disable_transmit_interrupt() {
+                ControlStatusRegisterB::clear_bit(TXCIE0);
+            }
+
+            inline static void enable_data_empty_interrupt() {
+                ControlStatusRegisterB::set_bit(UDRIE0);
+            }
+
+            inline static void disable_data_empty_interrupt() {
+                ControlStatusRegisterB::clear_bit(UDRIE0);
+            }
+
+            inline static void enable_receiver() {
+                ControlStatusRegisterB::set_bit(RXEN0);
+            }
+
+            inline static void disable_receiver() {
+                ControlStatusRegisterB::clear_bit(RXEN0);
+            }
+
+            inline static void enable_transmit() {
+                ControlStatusRegisterB::set_bit(TXEN0);
+            }
+
+            inline static void disable_transmit() {
+                ControlStatusRegisterB::clear_bit(TXEN0);
+            }
+
+            /// Control Register C
+
+            inline static void set_mode(USARTMode mode) {
+                uint8_t val = static_cast<uint8_t>(mode);
+                uint8_t mask = build_bitmask(UMSEL00, UMSEL01);
+                ControlStatusRegisterC::replace_bits(mask, val);
+            }
+
+            inline static void set_parity(USARTParityMode mode) {
+                uint8_t val = static_cast<uint8_t>(mode);
+                uint8_t mask = build_bitmask(UPM00, UPM01);
+                ControlStatusRegisterC::replace_bits(mask, val);
+            }
+
+            inline static void set_stop_bit(USARTStopBit mode) {
+                if (mode == USARTStopBit::Bits1) {
+                    ControlStatusRegisterC::clear_bit(USBS0);
+                } else {
+                    ControlStatusRegisterC::set_bit(USBS0);
+                }
+            }
+
+            inline static void set_usart_character_size(USARTCharSize size) {
+                uint8_t val = static_cast<uint8_t>(size);
+                uint8_t mask = build_bitmask(UCSZ00, UCSZ01);
+                ControlStatusRegisterC::replace_bits(mask, val & mask);
+                
+                // These don't get to use the SBI and CBI instructions.
+                mask = build_bitmask(UCSZ02);
+                ControlStatusRegisterB::replace_bits(mask, (val >> 1) & mask);
+            }
+
+            inline static void set_spi_data_order(SPIBitOrder order) {
+                if(order == SPIBitOrder::LSBFirst) {
+                    ControlStatusRegisterC::set_bit(UDORD0);
+                } else {
+                    ControlStatusRegisterC::clear_bit(UDORD0);
+                }
+            }
+
+            inline static void set_spi_clock_phase(SPIClockPhase phase) {
+                if(phase == SPIClockPhase::LeadingSample) {
+                    ControlStatusRegisterC::clear_bit(UCPHA0);
+                } else {
+                    ControlStatusRegisterC::set_bit(UCPHA0);
+                }
+            }
+
+            inline static void set_clock_polarity(ClockPolarity pol) {
+                if(pol == ClockPolarity::LeadingRising) {
+                    ControlStatusRegisterC::clear_bit(UCPOL0);
+                } else {
+                    ControlStatusRegisterC::set_bit(UCPOL0);
+                }
+            }
+
+            /// Other
+
+            inline static uint16_t read_data_9b() {
+                uint16_t ninth = ControlStatusRegisterB::get_bit(RXB80) << 7;
+                return ninth | DataRegister::get_value();
+            }
+
+            inline static void write_data_9b(uint16_t data) {
+                uint8_t mask = build_bitmask(TXB80);
+                ControlStatusRegisterB::replace_bits(mask, data >> 8);
+                DataRegister::set_value(data);
+            }
+
+            inline static void set_baud_rate(uint16_t rate) {
+                BaudRateRegister::set_value(rate & 0xFFF);
+            }
+    };
+
 }
 
 #endif //STRONG_PERIPHERALS_328P_H
