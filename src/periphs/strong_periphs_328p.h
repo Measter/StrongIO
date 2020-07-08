@@ -700,11 +700,6 @@ namespace Serials {
         Bits8 = 0b0110,
         Bits9 = 0b1110,
     };
-
-    enum class USARTClockPolarity {
-        Rising,
-        Falling,
-    };
     
     class USART {
         public:
@@ -735,8 +730,19 @@ namespace Serials {
                 while (!is_transmit_complete()) {}
             }
 
+            inline static void clear_transmit_complete() {
+                // datasheet says we should always set FE0, DOR0, and UPE0 to 0 when writing.
+                uint8_t mask = build_bitmask(FE0, DOR0, UPE0, TXC0);
+                uint8_t val = build_bitmask(TXC0);
+                ControlStatusRegisterA::replace_bits(mask, val);
+            }
+
             inline static bool is_data_register_empty() {
                 return ControlStatusRegisterA::get_bit(UDRE0) != 0;
+            }
+
+            inline static void wait_for_data_register_empty() {
+                while (!is_data_register_empty()) {}
             }
 
             // Set this to 0 when writing to Control A.
@@ -828,13 +834,13 @@ namespace Serials {
             inline static void set_mode(USARTMode mode) {
                 uint8_t val = static_cast<uint8_t>(mode);
                 uint8_t mask = build_bitmask(UMSEL00, UMSEL01);
-                ControlStatusRegisterC::replace_bits(mask, val);
+                ControlStatusRegisterC::replace_bits(mask, val & mask);
             }
 
             inline static void set_parity(USARTParityMode mode) {
                 uint8_t val = static_cast<uint8_t>(mode);
                 uint8_t mask = build_bitmask(UPM00, UPM01);
-                ControlStatusRegisterC::replace_bits(mask, val);
+                ControlStatusRegisterC::replace_bits(mask, val & mask);
             }
 
             inline static void set_stop_bit(USARTStopBit mode) {
