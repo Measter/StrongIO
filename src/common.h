@@ -46,7 +46,7 @@ struct IOReg {
         }
 
         inline static constexpr void clear_bit(uint8_t bit) {
-            *ptr() &= (1 << bit);
+            *ptr() &= ~(1 << bit);
         }
 
         // Note that the mask is inverted inside the function, and should
