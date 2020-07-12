@@ -909,6 +909,150 @@ namespace Serials {
             }
     };
 
+    enum class TWIPrescale {
+        PS1  = 0b00,
+        PS4  = 0b01,
+        PS16 = 0b10,
+        PS64 = 0b11,
+    };
+
+    enum class TWIStatus {
+        Mst_StartTxd                 = 0x08,
+        Mst_StartRepeated            = 0x10,
+        Mst_SLAWTx_ACK               = 0x18,
+        Mst_SLAWTx_NoACK             = 0x20,
+        Mst_DataTx_ACK               = 0x28,
+        Mst_DataTx_NoACK             = 0x30,
+        Mst_ArbitLost                = 0x38,
+        Mst_SLARTx_ACK               = 0x40,
+        Mst_SLARTx_NoACK             = 0x48,
+        Mst_DataRcv_ACK              = 0x50,
+        Mst_DataRcv_NoACK            = 0x58,
+
+        Slv_SLARRcv_Ack               = 0xA8,
+        Slv_TxArbitLost_OwnSLARW_ACK  = 0xB0,
+        Slv_DataTx_ACK                = 0xB8,
+        Slv_DataTx_NoACK              = 0xC0,
+        Slv_LastDataTx_ACK            = 0xC8,
+        Slv_SLAWRcv_ACK               = 0x60,
+        Slv_RcvArbitLost_OwnSLARW_ACK = 0x68,
+        Slv_GenCall_ACK               = 0x70,
+        Slv_ArbitLost_GenCall_ACK     = 0x78,
+        Slv_PrevAddrSLAW_DataRcv_ACK  = 0x80,
+        Slv_PrevAddrSLAW_DataRcv_NoACK = 0x88,
+        Slv_PrevAddrGenCall_DataRcv_ACK = 0x90,
+        Slv_PrevAddrGenCall_DataRcv_NoACK = 0x98,
+        Slv_StopRptStart              = 0xA0,
+
+        NoState                       = 0xF8,
+        BusError                      = 0x00
+    };
+
+    class TWI {
+        public:
+            using BitRateRegister = IOReg<uint8_t, 0xB8>; // TWBR
+            using StatusRegister = IOReg<uint8_t, 0xB9, 0xF8>; // TWSR
+            using SlaveAddress = IOReg<uint8_t, 0xBA, 0xFE>; // TWAR
+            using DataRegister = IOReg<uint8_t, 0xBB, 0xFF>; // TWDR
+            using ControlRegister = IOReg<uint8_t, 0xBC>; // TWCR
+            using SlaveAddressMask = IOReg<uint8_t, 0xBD>; // TWAMR
+
+            inline static void set_prescaler(TWIPrescale pres) {
+                uint8_t val = static_cast<uint8_t>(pres);
+                uint8_t mask = build_bitmask(TWPS0, TWPS1);
+                StatusRegister::replace_bits(mask, val);
+            }
+
+            inline static TWIStatus get_status() {
+                uint8_t mask = build_bitmask(TWS7, TWS6, TWS5, TWS4, TWS3);
+                uint8_t bits = StatusRegister::get_value() & mask;
+                return static_cast<TWIStatus>(bits);
+            }
+
+            // Note: Shifts the address left by 1 before saving.
+            inline static void set_slave_address(uint8_t addr) {
+                SlaveAddress::replace_bits(0xFE, addr << 1);
+            }
+
+            // Note: Shifts the address right by one before returning.
+            inline static uint8_t get_slave_address() {
+                return SlaveAddress::get_value() >> 1;
+            }
+
+            // Note: Shifts mask left by 1 before saving.
+            inline static void set_slave_address_mask(uint8_t mask) {
+                SlaveAddressMask::replace_bits(0xFE, mask << 1);
+            }
+
+            // Nate: Shifts mask right be 1 before returning.
+            inline static uint8_t get_slave_address_mask() {
+                return SlaveAddressMask::get_value() >> 1;
+            }
+
+            inline static void enable_general_call() {
+                SlaveAddress::set_bit(TWGCE);
+            }
+
+            inline static void disable_general_call() {
+                SlaveAddress::clear_bit(TWGCE);
+            }
+
+            inline static bool get_interrupt_flag() {
+                return ControlRegister::get_bit(TWINT) != 0;
+            }
+
+            inline static void clear_interrupt_flag() {
+                ControlRegister::set_bit(TWINT);
+            }
+
+            inline static void wait_for_interrupt_flag() {
+                while(!get_interrupt_flag()) {}
+            }
+
+            inline static void enable_ack() {
+                ControlRegister::set_bit(TWEA);
+            }
+
+            inline static void virtual_disconnect() {
+                ControlRegister::clear_bit(TWEA);
+            }
+
+            inline static void set_start() {
+                ControlRegister::set_bit(TWSTA);
+            }
+
+            inline static void clear_start() {
+                ControlRegister::clear_bit(TWSTA);
+            }
+
+            inline static void set_stop() {
+                ControlRegister::set_bit(TWSTO);
+            }
+
+            inline static void clear_slave_error() {
+                ControlRegister::clear_bit(TWSTO);
+            }
+
+            inline static bool get_write_collision_flag() {
+                return ControlRegister::get_bit(TWWC) != 0;
+            }
+
+            inline static void enable_twi() {
+                ControlRegister::set_bit(TWEN);
+            }
+
+            inline static void disable_twi() {
+                ControlRegister::clear_bit(TWEN);
+            }
+
+            inline static void enable_interrupt() {
+                ControlRegister::set_bit(TWIE);
+            }
+
+            inline static void disable_interrupt() {
+                ControlRegister::clear_bit(TWIE);
+            }
+    };
 }
 
 #endif //STRONG_PERIPHERALS_328P_H
