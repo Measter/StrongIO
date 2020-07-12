@@ -701,7 +701,9 @@ namespace Serials {
         Bits9 = 0b1110,
     };
     
-    class USART {
+    // I've separated the register definition from the configuration because the 2560
+    // has multiple USARTs, which are all identically configured.
+    class USART0 {
         public:
             using DataRegister = IOReg<uint8_t, 0xC6>; // UDR0
             using ControlStatusRegisterA = IOReg<uint8_t, 0xC0, 0x20>; // UCSR0A
@@ -711,11 +713,15 @@ namespace Serials {
             using BaudRateRegister = IOReg<uint16_t, 0xC4>; // UBRR0
             using BaudRateRegisterLow = IOReg<uint8_t, 0xC4>; // UBRR0L
             using BaudRateRegisterHigh = IOReg<uint8_t, 0xC5>; // UBRR0H
+    };
 
+    template <typename USART>
+    class USARTConfig {
+        public:
             /// Control Register A
 
             inline static bool is_receive_complete() {
-                return ControlStatusRegisterA::get_bit(RXC0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(RXC0) != 0;
             }
 
             inline static void wait_for_receive() {
@@ -723,7 +729,7 @@ namespace Serials {
             }
 
             inline static bool is_transmit_complete() {
-                return ControlStatusRegisterA::get_bit(TXC0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(TXC0) != 0;
             }
 
             inline static void wait_for_transmit() {
@@ -734,11 +740,11 @@ namespace Serials {
                 // datasheet says we should always set FE0, DOR0, and UPE0 to 0 when writing.
                 uint8_t mask = build_bitmask(FE0, DOR0, UPE0, TXC0);
                 uint8_t val = build_bitmask(TXC0);
-                ControlStatusRegisterA::replace_bits(mask, val);
+                USART::ControlStatusRegisterA::replace_bits(mask, val);
             }
 
             inline static bool is_data_register_empty() {
-                return ControlStatusRegisterA::get_bit(UDRE0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(UDRE0) != 0;
             }
 
             inline static void wait_for_data_register_empty() {
@@ -747,86 +753,86 @@ namespace Serials {
 
             // Set this to 0 when writing to Control A.
             inline static bool had_frame_error() {
-                return ControlStatusRegisterA::get_bit(FE0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(FE0) != 0;
             }
 
             //Set this to 0 when writing to Control A.
             inline static bool had_data_overrun() {
-                return ControlStatusRegisterA::get_bit(DOR0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(DOR0) != 0;
             }
 
             // Set this to 0 when writing to Control A.
             inline static bool had_parity_error() {
-                return ControlStatusRegisterA::get_bit(UPE0) != 0;
+                return USART::ControlStatusRegisterA::get_bit(UPE0) != 0;
             }
 
             inline static void enable_double_transmit_speed() {
                 // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
                 uint8_t mask = build_bitmask(FE0, DOR0, UPE0, U2X0);
                 uint8_t val = build_bitmask(U2X0);
-                ControlStatusRegisterA::replace_bits(mask, val);
+                USART::ControlStatusRegisterA::replace_bits(mask, val);
             }
 
             inline static void disable_double_transmit_speed() {
                 // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
                 uint8_t mask = build_bitmask(FE0, DOR0, UPE0, U2X0);
-                ControlStatusRegisterA::replace_bits(mask, 0);
+                USART::ControlStatusRegisterA::replace_bits(mask, 0);
             }
 
             inline static void enable_multi_proc() {
                 // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
                 uint8_t mask = build_bitmask(FE0, DOR0, UPE0, MPCM0);
                 uint8_t val = build_bitmask(MPCM0);
-                ControlStatusRegisterA::replace_bits(mask, val);
+                USART::ControlStatusRegisterA::replace_bits(mask, val);
             }
 
             inline static void disable_multi_proc() {
                 // datasheet says we should alawys set FE0, DOR0, and UPE0 to 0 when writing.
                 uint8_t mask = build_bitmask(FE0, DOR0, UPE0, MPCM0);
-                ControlStatusRegisterA::replace_bits(mask, 0);
+                USART::ControlStatusRegisterA::replace_bits(mask, 0);
             }
     
             
             /// Control Register B
 
             inline static void enable_receive_interrupt() {
-                ControlStatusRegisterB::set_bit(RXCIE0);
+                USART::ControlStatusRegisterB::set_bit(RXCIE0);
             }
 
             inline static void disable_receive_interrupt() {
-                ControlStatusRegisterB::clear_bit(RXCIE0);
+                USART::ControlStatusRegisterB::clear_bit(RXCIE0);
             }
             
             inline static void enable_transmit_interrupt() {
-                ControlStatusRegisterB::set_bit(TXCIE0);
+                USART::ControlStatusRegisterB::set_bit(TXCIE0);
             }
 
             inline static void disable_transmit_interrupt() {
-                ControlStatusRegisterB::clear_bit(TXCIE0);
+                USART::ControlStatusRegisterB::clear_bit(TXCIE0);
             }
 
             inline static void enable_data_empty_interrupt() {
-                ControlStatusRegisterB::set_bit(UDRIE0);
+                USART::ControlStatusRegisterB::set_bit(UDRIE0);
             }
 
             inline static void disable_data_empty_interrupt() {
-                ControlStatusRegisterB::clear_bit(UDRIE0);
+                USART::ControlStatusRegisterB::clear_bit(UDRIE0);
             }
 
             inline static void enable_receiver() {
-                ControlStatusRegisterB::set_bit(RXEN0);
+                USART::ControlStatusRegisterB::set_bit(RXEN0);
             }
 
             inline static void disable_receiver() {
-                ControlStatusRegisterB::clear_bit(RXEN0);
+                USART::ControlStatusRegisterB::clear_bit(RXEN0);
             }
 
             inline static void enable_transmit() {
-                ControlStatusRegisterB::set_bit(TXEN0);
+                USART::ControlStatusRegisterB::set_bit(TXEN0);
             }
 
             inline static void disable_transmit() {
-                ControlStatusRegisterB::clear_bit(TXEN0);
+                USART::ControlStatusRegisterB::clear_bit(TXEN0);
             }
 
             /// Control Register C
@@ -834,72 +840,72 @@ namespace Serials {
             inline static void set_mode(USARTMode mode) {
                 uint8_t val = static_cast<uint8_t>(mode);
                 uint8_t mask = build_bitmask(UMSEL00, UMSEL01);
-                ControlStatusRegisterC::replace_bits(mask, val & mask);
+                USART::ControlStatusRegisterC::replace_bits(mask, val & mask);
             }
 
             inline static void set_parity(USARTParityMode mode) {
                 uint8_t val = static_cast<uint8_t>(mode);
                 uint8_t mask = build_bitmask(UPM00, UPM01);
-                ControlStatusRegisterC::replace_bits(mask, val & mask);
+                USART::ControlStatusRegisterC::replace_bits(mask, val & mask);
             }
 
             inline static void set_stop_bit(USARTStopBit mode) {
                 if (mode == USARTStopBit::Bits1) {
-                    ControlStatusRegisterC::clear_bit(USBS0);
+                    USART::ControlStatusRegisterC::clear_bit(USBS0);
                 } else {
-                    ControlStatusRegisterC::set_bit(USBS0);
+                    USART::ControlStatusRegisterC::set_bit(USBS0);
                 }
             }
 
             inline static void set_usart_character_size(USARTCharSize size) {
                 uint8_t val = static_cast<uint8_t>(size);
                 uint8_t mask = build_bitmask(UCSZ00, UCSZ01);
-                ControlStatusRegisterC::replace_bits(mask, val & mask);
+                USART::ControlStatusRegisterC::replace_bits(mask, val & mask);
                 
                 // These don't get to use the SBI and CBI instructions.
                 mask = build_bitmask(UCSZ02);
-                ControlStatusRegisterB::replace_bits(mask, (val >> 1) & mask);
+                USART::ControlStatusRegisterB::replace_bits(mask, (val >> 1) & mask);
             }
 
             inline static void set_spi_data_order(SPIBitOrder order) {
                 if(order == SPIBitOrder::LSBFirst) {
-                    ControlStatusRegisterC::set_bit(UDORD0);
+                    USART::ControlStatusRegisterC::set_bit(UDORD0);
                 } else {
-                    ControlStatusRegisterC::clear_bit(UDORD0);
+                    USART::ControlStatusRegisterC::clear_bit(UDORD0);
                 }
             }
 
             inline static void set_spi_clock_phase(SPIClockPhase phase) {
                 if(phase == SPIClockPhase::LeadingSample) {
-                    ControlStatusRegisterC::clear_bit(UCPHA0);
+                    USART::ControlStatusRegisterC::clear_bit(UCPHA0);
                 } else {
-                    ControlStatusRegisterC::set_bit(UCPHA0);
+                    USART::ControlStatusRegisterC::set_bit(UCPHA0);
                 }
             }
 
             inline static void set_clock_polarity(ClockPolarity pol) {
                 if(pol == ClockPolarity::LeadingRising) {
-                    ControlStatusRegisterC::clear_bit(UCPOL0);
+                    USART::ControlStatusRegisterC::clear_bit(UCPOL0);
                 } else {
-                    ControlStatusRegisterC::set_bit(UCPOL0);
+                    USART::ControlStatusRegisterC::set_bit(UCPOL0);
                 }
             }
 
             /// Other
 
             inline static uint16_t read_data_9b() {
-                uint16_t ninth = ControlStatusRegisterB::get_bit(RXB80) << 7;
-                return ninth | DataRegister::get_value();
+                uint16_t ninth = USART::ControlStatusRegisterB::get_bit(RXB80) << 7;
+                return ninth | USART::DataRegister::get_value();
             }
 
             inline static void write_data_9b(uint16_t data) {
                 uint8_t mask = build_bitmask(TXB80);
-                ControlStatusRegisterB::replace_bits(mask, data >> 8);
-                DataRegister::set_value(data);
+                USART::ControlStatusRegisterB::replace_bits(mask, data >> 8);
+                USART::DataRegister::set_value(data);
             }
 
             inline static void set_baud_rate(uint16_t rate) {
-                BaudRateRegister::set_value(rate & 0xFFF);
+                USART::BaudRateRegister::set_value(rate & 0xFFF);
             }
     };
 
