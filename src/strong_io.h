@@ -57,11 +57,11 @@ namespace IO {
             }
 
             template<class ClockPin>
-            inline void shift_out(DigitalOutBase<ClockPin>& clockPin, Serials::SPIBitOrder bitOrder, uint8_t value) {
+            inline void shift_out(DigitalOutBase<ClockPin>& clockPin, Peripherals::Serials::SPIBitOrder bitOrder, uint8_t value) {
                 static_assert(is_digital<ClockPin>::value, "clockPin must be a DigitalOut");
                 // Having the redundant loop is more faster because there's less branching
                 // inside the loop.
-                if (bitOrder == Serials::SPIBitOrder::LSBFirst) {
+                if (bitOrder == Peripherals::Serials::SPIBitOrder::LSBFirst) {
                     for (uint8_t i = 0; i < 8; i++) {
                         if (value & 0x1)
                             this->set_high();
@@ -101,7 +101,7 @@ namespace IO {
         public:
             inline DigitalOut() {
                 // Ensure the timer is disconnected from the pin.
-                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
+                Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
@@ -132,10 +132,10 @@ namespace IO {
             }
 
             template<class ClockPin>
-            inline uint8_t shift_in(DigitalOutBase<ClockPin> clockPin, Serials::SPIBitOrder bitOrder) {
+            inline uint8_t shift_in(DigitalOutBase<ClockPin> clockPin, Peripherals::Serials::SPIBitOrder bitOrder) {
                 // Having the redundant loop ends up being faster due to less branching inside the loop.
                 uint8_t value = 0;
-                if (bitOrder == Serials::SPIBitOrder::LSBFirst) {
+                if (bitOrder == Peripherals::Serials::SPIBitOrder::LSBFirst) {
                     uint8_t bit = 0x1;
                     for (uint8_t i = 0; i < 8; i++) {
                         clockPin.toggle();
@@ -178,13 +178,11 @@ namespace IO {
         public:
             inline DigitalIn() {
                 // Ensure the timer is disconnected from the pin.
-                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
+                Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
 
                 this->inner_init();
             }
     };
-
-    Analog::VoltageReference analog_reference = Analog::VoltageReference::AVCC;
 
     template<typename Pin>
     class AnalogInBase {
@@ -193,14 +191,13 @@ namespace IO {
             inline AnalogInBase() {}
         public:
             inline void start_read() {
-                Analog::AnalogDigitalConverter::set_voltage_ref(analog_reference);
-                Analog::AnalogDigitalConverter::set_channel(Pin::analog_channel);
-                Analog::AnalogDigitalConverter::start_conversion();
+                Peripherals::Analog::AnalogDigitalConverter::set_channel(Pin::analog_channel);
+                Peripherals::Analog::AnalogDigitalConverter::start_conversion();
             }
 
             inline uint16_t finish_read() {
-                Analog::AnalogDigitalConverter::wait_for_conversion();
-                return Analog::AnalogDigitalConverter::read_data();
+                Peripherals::Analog::AnalogDigitalConverter::wait_for_conversion();
+                return Peripherals::Analog::AnalogDigitalConverter::read_data();
             }
 
             inline uint16_t read() {
@@ -258,14 +255,14 @@ namespace IO {
             inline void set_duty(uint8_t duty) {
                 if (duty == 0) {
                     // Disconnect timer.
-                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
+                    Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
                     Pin::Port::OutputRegister::clear_bit(Pin::digital_pin_bit);
                 } else if (duty == 255) {
                     // Disconnect timer.
-                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
+                    Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
                     Pin::Port::OutputRegister::set_bit(Pin::digital_pin_bit);
                 } else {
-                    Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode2);
+                    Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode2);
                     Pin::TimerChannel::set_output_compare(duty);
                 }
             }
@@ -324,12 +321,12 @@ namespace IO {
                 Pin::TimerChannel::Timer::set_prescale(static_cast<PrescaleMode>(mode+1));
 
                 // Connect Pin to timer to toggle on each compare match.
-                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode1);
+                Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode1);
             }
 
             inline void stop_tone() {
                 // Just disconnect the pin. We won't bother turning the timer off.
-                Pin::TimerChannel::set_mode(Timers::CompareOutputMode::Mode0);
+                Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
             }
     };
 }
