@@ -104,8 +104,8 @@ namespace Timers {
             using WaveformMode = Timer02WaveformMode;
             using CompareType = uint8_t;
 
-            using ControlA = IOReg<uint8_t, 0x24 + __SFR_OFFSET>; // TCCR1A
-            using ControlB = IOReg<uint8_t, 0x25 + __SFR_OFFSET>; // TCCR1B
+            using ControlA = IOReg<uint8_t, 0x24 + __SFR_OFFSET>; // TCCR0A
+            using ControlB = IOReg<uint8_t, 0x25 + __SFR_OFFSET>; // TCCR0B
             using InterruptMask = IOReg<uint8_t, 0x6E>; // TIMSK0
             using InterruptFlag = IOReg<uint8_t, 0x15 + __SFR_OFFSET>; // TIFR0
             using CounterValue = IOReg<CompareType, 0x26 + __SFR_OFFSET>; // TCNT0
@@ -142,7 +142,7 @@ namespace Timers {
             }
 
             inline static void disable_overflow_interrupt() {
-                InterruptMask::set_bit(TOIE0);
+                InterruptMask::clear_bit(TOIE0);
             }
 
             inline static void set_prescale(PrescaleMode mode) {
