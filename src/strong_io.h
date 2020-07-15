@@ -329,6 +329,221 @@ namespace IO {
                 Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode0);
             }
     };
+
+    // This type is based off the timing functions from the Arduino library.
+    template<typename Timer, typename IntType = uint32_t>
+    class Clock {
+        private:
+            static constexpr uint32_t ClockCyclesPerMicro = F_CPU / 1000000L;
+
+            inline static constexpr uint32_t clock_cycles_to_micros(uint32_t a) {
+                return a / ClockCyclesPerMicro;
+            }
+
+            static constexpr uint32_t MicrosPerOverflow = clock_cycles_to_micros(64 * 256);
+            static constexpr uint32_t MillisPerOverflow = MicrosPerOverflow / 1000;
+            static constexpr uint8_t FractionalMillisPerOverflow = (MicrosPerOverflow % 1000) >> 3;
+            static constexpr uint8_t FractMax = 1000 >> 3;
+
+            IntType timer_overflow_count;
+            IntType timer_millis;
+            uint8_t timer_fract;
+
+        public:
+            inline Clock(bool configure_timer = false) {
+                if (configure_timer) {
+                    using PrescaleMode = typename Timer::PrescaleMode;
+                    using WaveformMode = typename Timer::WaveformMode;
+                    Timer::set_prescale(PrescaleMode::PS64);
+                    Timer::set_waveform(WaveformMode::PWMFast_MAX);
+                    Timer::enable_overflow_interrupt();
+                }
+                this->reset();
+            }
+
+            inline void reset() {
+                this->timer_overflow_count = 0;
+                this->timer_millis = 0;
+                this->timer_fract = 0;
+            }
+
+            inline IntType millis() {
+                // Disable interrupts to make sure an interrupt doesn't fire while we're reading
+                // the value.
+                cli();
+                IntType m = this->timer_millis;
+                sei();
+                return m;
+            }
+
+            inline IntType micros() {
+                // Disable interrupts to make sure an interrupt doesn't fire in
+                // the middle of reading the value.
+                cli();
+                IntType m = this->timer_overflow_count;
+                // We're fine to truncate this, as we assume 256 is the max.
+                uint8_t t = Timer::CounterValue::get_value();
+
+                // Note: Possible issue in future? Maybe other AVRs put the TOV bit elsewhere?
+                if ((Timer::InterruptFlag::get_bit(TOV0) != 0) && (t < 255)) {
+                    m++;
+                }
+                // Restore interrupts
+                sei();
+
+                return ((m << 8) + t) * (64 / ClockCyclesPerMicro);
+            }
+
+            inline void delay_millis(IntType ms) {
+                IntType start = this->micros();
+
+                while (ms > 0) {
+                    while (ms > 0 && (this->micros() - start) >= 1000) {
+                        ms--;
+                        start += 1000;
+                    }
+                }
+            }
+
+            // This function is copied whole-sale from the Arduino library.
+            /* Delay for the given number of microseconds.  Assumes a 1, 8, 12, 16, 20 or 24 MHz clock. */
+            void delay_micros(uint16_t us)
+            {
+                // call = 4 cycles + 2 to 4 cycles to init us(2 for constant delay, 4 for variable)
+
+                // calling avrlib's delay_us() function with low values (e.g. 1 or
+                // 2 microseconds) gives delays longer than desired.
+                //delay_us(us);
+            #if F_CPU >= 24000000L
+                // for the 24 MHz clock for the aventurous ones, trying to overclock
+
+                // zero delay fix
+                if (!us) return; //  = 3 cycles, (4 when true)
+
+                // the following loop takes a 1/6 of a microsecond (4 cycles)
+                // per iteration, so execute it six times for each microsecond of
+                // delay requested.
+                us *= 6; // x6 us, = 7 cycles
+
+                // account for the time taken in the preceeding commands.
+                // we just burned 22 (24) cycles above, remove 5, (5*4=20)
+                // us is at least 6 so we can substract 5
+                us -= 5; //=2 cycles
+
+            #elif F_CPU >= 20000000L
+                // for the 20 MHz clock on rare Arduino boards
+
+                // for a one-microsecond delay, simply return.  the overhead
+                // of the function call takes 18 (20) cycles, which is 1us
+                __asm__ __volatile__ (
+                    "nop" "\n\t"
+                    "nop" "\n\t"
+                    "nop" "\n\t"
+                    "nop"); //just waiting 4 cycles
+                if (us <= 1) return; //  = 3 cycles, (4 when true)
+
+                // the following loop takes a 1/5 of a microsecond (4 cycles)
+                // per iteration, so execute it five times for each microsecond of
+                // delay requested.
+                us = (us << 2) + us; // x5 us, = 7 cycles
+
+                // account for the time taken in the preceeding commands.
+                // we just burned 26 (28) cycles above, remove 7, (7*4=28)
+                // us is at least 10 so we can substract 7
+                us -= 7; // 2 cycles
+
+            #elif F_CPU >= 16000000L
+                // for the 16 MHz clock on most Arduino boards
+
+                // for a one-microsecond delay, simply return.  the overhead
+                // of the function call takes 14 (16) cycles, which is 1us
+                if (us <= 1) return; //  = 3 cycles, (4 when true)
+
+                // the following loop takes 1/4 of a microsecond (4 cycles)
+                // per iteration, so execute it four times for each microsecond of
+                // delay requested.
+                us <<= 2; // x4 us, = 4 cycles
+
+                // account for the time taken in the preceeding commands.
+                // we just burned 19 (21) cycles above, remove 5, (5*4=20)
+                // us is at least 8 so we can substract 5
+                us -= 5; // = 2 cycles,
+
+            #elif F_CPU >= 12000000L
+                // for the 12 MHz clock if somebody is working with USB
+
+                // for a 1 microsecond delay, simply return.  the overhead
+                // of the function call takes 14 (16) cycles, which is 1.5us
+                if (us <= 1) return; //  = 3 cycles, (4 when true)
+
+                // the following loop takes 1/3 of a microsecond (4 cycles)
+                // per iteration, so execute it three times for each microsecond of
+                // delay requested.
+                us = (us << 1) + us; // x3 us, = 5 cycles
+
+                // account for the time taken in the preceeding commands.
+                // we just burned 20 (22) cycles above, remove 5, (5*4=20)
+                // us is at least 6 so we can substract 5
+                us -= 5; //2 cycles
+
+            #elif F_CPU >= 8000000L
+                // for the 8 MHz internal clock
+
+                // for a 1 and 2 microsecond delay, simply return.  the overhead
+                // of the function call takes 14 (16) cycles, which is 2us
+                if (us <= 2) return; //  = 3 cycles, (4 when true)
+
+                // the following loop takes 1/2 of a microsecond (4 cycles)
+                // per iteration, so execute it twice for each microsecond of
+                // delay requested.
+                us <<= 1; //x2 us, = 2 cycles
+
+                // account for the time taken in the preceeding commands.
+                // we just burned 17 (19) cycles above, remove 4, (4*4=16)
+                // us is at least 6 so we can substract 4
+                us -= 4; // = 2 cycles
+
+            #else
+                // for the 1 MHz internal clock (default settings for common Atmega microcontrollers)
+
+                // the overhead of the function calls is 14 (16) cycles
+                if (us <= 16) return; //= 3 cycles, (4 when true)
+                if (us <= 25) return; //= 3 cycles, (4 when true), (must be at least 25 if we want to substract 22)
+
+                // compensate for the time taken by the preceeding and next commands (about 22 cycles)
+                us -= 22; // = 2 cycles
+                // the following loop takes 4 microseconds (4 cycles)
+                // per iteration, so execute it us/4 times
+                // us is at least 4, divided by 4 gives us 1 (no zero delay bug)
+                us >>= 2; // us div 4, = 4 cycles
+                
+
+            #endif
+
+                // busy wait
+                __asm__ __volatile__ (
+                    "1: sbiw %0,1" "\n\t" // 2 cycles
+                    "brne 1b" : "=w" (us) : "0" (us) // 2 cycles
+                );
+                // return = 4 cycles
+            }
+
+            inline void tick() {
+                IntType m = this->timer_millis;
+                uint8_t f = this->timer_fract;
+
+                m += MillisPerOverflow;
+                f += FractionalMillisPerOverflow;
+                if (f >= FractMax) {
+                    f -= FractMax;
+                    m += 1;
+                }
+
+                this->timer_fract = f;
+                this->timer_millis = m;
+                this->timer_overflow_count++;
+            }
+    };
 }
 
 #endif //STRONG_IO_H
