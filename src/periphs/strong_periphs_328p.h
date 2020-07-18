@@ -159,6 +159,31 @@ namespace Peripherals {
                     mask = build_bitmask(WGM02);
                     ControlB::replace_bits(mask, bits & mask);
                 }
+
+                // This is needed for the Tone type. It's done here because it's needed
+                // on each timer, and we want to avoid a progmem read if we can.
+                inline static PrescaleMode next_bigger_prescale(uint16_t min) {
+                    if (min < 1)
+                        return PrescaleMode::PS1;
+                    else if (min < 8)
+                        return PrescaleMode::PS8;
+                    else if (min < 64)
+                        return PrescaleMode::PS64;
+                    else if (min < 256)
+                        return PrescaleMode::PS256;
+                    return PrescaleMode::PS1024;
+                }
+
+                inline static uint16_t get_prescale_value(PrescaleMode mode) {
+                    switch (mode) {
+                        case PrescaleMode::PS1: return 1;
+                        case PrescaleMode::PS8: return 8;
+                        case PrescaleMode::PS64: return 64;
+                        case PrescaleMode::PS256: return 256;
+                        case PrescaleMode::PS1024: return 1024;
+                        default: return 0;
+                    }
+                }
         };
 
         class Timer1 {
@@ -231,6 +256,31 @@ namespace Peripherals {
                     mask = build_bitmask(WGM13, WGM12);
                     ControlB::replace_bits(mask, bits & mask);
                 }
+
+                // This is needed for the Tone type. It's done here because it's needed
+                // on each timer, and we want to avoid a progmem read if we can.
+                inline static PrescaleMode next_bigger_prescale(uint16_t min) {
+                    if (min < 1)
+                        return PrescaleMode::PS1;
+                    else if (min < 8)
+                        return PrescaleMode::PS8;
+                    else if (min < 64)
+                        return PrescaleMode::PS64;
+                    else if (min < 256)
+                        return PrescaleMode::PS256;
+                    return PrescaleMode::PS1024;
+                }
+
+                inline static uint16_t get_prescale_value(PrescaleMode mode) {
+                    switch (mode) {
+                        case PrescaleMode::PS1: return 1;
+                        case PrescaleMode::PS8: return 8;
+                        case PrescaleMode::PS64: return 64;
+                        case PrescaleMode::PS256: return 256;
+                        case PrescaleMode::PS1024: return 1024;
+                        default: return 0;
+                    }
+                }
         };
 
         class Timer2 {
@@ -292,6 +342,37 @@ namespace Peripherals {
                     ControlA::replace_bits(mask, bits & mask);
                     mask = build_bitmask(WGM22);
                     ControlB::replace_bits(mask, bits & mask);
+                }
+
+                // This is needed for the Tone type. It's done here because it's needed
+                // on each timer, and we want to avoid a progmem read if we can.
+                inline static PrescaleMode next_bigger_prescale(uint16_t min) {
+                    if (min < 1)
+                        return PrescaleMode::PS1;
+                    else if (min < 8)
+                        return PrescaleMode::PS8;
+                    else if (min < 32)
+                        return PrescaleMode::PS32;
+                    else if (min < 64)
+                        return PrescaleMode::PS64;
+                    else if (min < 128)
+                        return PrescaleMode::PS128;
+                    else if (min < 256)
+                        return PrescaleMode::PS256;
+                    return PrescaleMode::PS1024;
+                }
+
+                inline static uint16_t get_prescale_value(PrescaleMode mode) {
+                    switch (mode) {
+                        case PrescaleMode::PS1: return 1;
+                        case PrescaleMode::PS8: return 8;
+                        case PrescaleMode::PS32: return 32;
+                        case PrescaleMode::PS64: return 64;
+                        case PrescaleMode::PS128: return 128;
+                        case PrescaleMode::PS256: return 256;
+                        case PrescaleMode::PS1024: return 1024;
+                        default: return 0;
+                    }
                 }
         };
 

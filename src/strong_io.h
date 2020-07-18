@@ -309,16 +309,12 @@ namespace IO {
 
                 frequency *= 2;
                 uint16_t target_prescale = F_CPU / 256 / frequency;
-                uint8_t mode;
-                for (mode = 0; mode < Timer::prescale_count; mode++) {
-                    if (pgm_read_word(Timer::prescale_values() + mode) >= target_prescale) {
-                        break;
-                    }
-                }
+                PrescaleMode pr_mode = Timer::next_bigger_prescale(target_prescale);
+                uint16_t mode_val = Timer::get_prescale_value(pr_mode);
 
-                uint8_t ocr = F_CPU / pgm_read_word(Timer::prescale_values() + mode) / frequency - 1;
+                uint8_t ocr = F_CPU / mode_val / frequency - 1;
                 Pin::TimerChannel::set_output_compare(ocr);
-                Pin::TimerChannel::Timer::set_prescale(static_cast<PrescaleMode>(mode+1));
+                Pin::TimerChannel::Timer::set_prescale(pr_mode);
 
                 // Connect Pin to timer to toggle on each compare match.
                 Pin::TimerChannel::set_mode(Peripherals::Timers::CompareOutputMode::Mode1);
