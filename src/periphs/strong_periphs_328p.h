@@ -28,65 +28,66 @@ namespace Peripherals {
         };
 
         class ExternalInterrupts {
-            using ExternalControlRegisterA = IOReg<uint8_t, 0x69>; // EICRA
-            using ExternalMaskRegister = IOReg<uint8_t, 0x1D + __SFR_OFFSET>; // EIMSK
-            using ExternalFlagRegister = IOReg<uint8_t, 0x1C + __SFR_OFFSET>; // EIFR
+            public:
+                using ExternalControlRegisterA = IOReg<uint8_t, 0x69>; // EICRA
+                using ExternalMaskRegister = IOReg<uint8_t, 0x1D + __SFR_OFFSET>; // EIMSK
+                using ExternalFlagRegister = IOReg<uint8_t, 0x1C + __SFR_OFFSET>; // EIFR
 
-            using ChangeControlRegister = IOReg<uint8_t, 0x68>; // PCICR
-            using ChangeFlagRegister = IOReg<uint8_t, 0x1B + __SFR_OFFSET>; // PCIFR
-            using ChangeMaskRegister0 = IOReg<uint8_t, 0x6B>; // PCMSK0
-            using ChangeMaskRegister1 = IOReg<uint8_t, 0x6C>; // PCMSK1
-            using ChangeMaskRegister2 = IOReg<uint8_t, 0x6D>; // PCMSK2
+                using ChangeControlRegister = IOReg<uint8_t, 0x68>; // PCICR
+                using ChangeFlagRegister = IOReg<uint8_t, 0x1B + __SFR_OFFSET>; // PCIFR
+                using ChangeMaskRegister0 = IOReg<uint8_t, 0x6B>; // PCMSK0
+                using ChangeMaskRegister1 = IOReg<uint8_t, 0x6C>; // PCMSK1
+                using ChangeMaskRegister2 = IOReg<uint8_t, 0x6D>; // PCMSK2
 
-            inline static void enable_change_0() {
-                ChangeControlRegister::set_bit(PCIE0);
-            }
+                inline static void enable_change_0() {
+                    ChangeControlRegister::set_bit(PCIE0);
+                }
 
-            inline static void disable_change_0() {
-                ChangeControlRegister::clear_bit(PCIE0);
-            }
+                inline static void disable_change_0() {
+                    ChangeControlRegister::clear_bit(PCIE0);
+                }
 
-            inline static void enable_change_1() {
-                ChangeControlRegister::set_bit(PCIE1);
-            }
+                inline static void enable_change_1() {
+                    ChangeControlRegister::set_bit(PCIE1);
+                }
 
-            inline static void disable_change_1() {
-                ChangeControlRegister::clear_bit(PCIE1);
-            }
+                inline static void disable_change_1() {
+                    ChangeControlRegister::clear_bit(PCIE1);
+                }
 
-            inline static void enable_change_2() {
-                ChangeControlRegister::set_bit(PCIE2);
-            }
+                inline static void enable_change_2() {
+                    ChangeControlRegister::set_bit(PCIE2);
+                }
 
-            inline static void disable_change_2() {
-                ChangeControlRegister::clear_bit(PCIE2);
-            }
+                inline static void disable_change_2() {
+                    ChangeControlRegister::clear_bit(PCIE2);
+                }
 
-            inline static void set_int0_sense_mode(ExternalInterruptMode mode) {
-                uint8_t val = static_cast<uint8_t>(mode);
-                uint8_t mask = build_bitmask(ISC00, ISC01);
-                ExternalControlRegisterA::replace_bits(mask, val);
-            }
+                inline static void set_int0_sense_mode(ExternalInterruptMode mode) {
+                    uint8_t val = static_cast<uint8_t>(mode);
+                    uint8_t mask = build_bitmask(ISC00, ISC01);
+                    ExternalControlRegisterA::replace_bits(mask, val);
+                }
 
-            inline static void set_int1_sense_mode(ExternalInterruptMode mode) {
-                uint8_t val = static_cast<uint8_t>(mode) << 2;
-                uint8_t mask = build_bitmask(ISC10, ISC11);
-                ExternalControlRegisterA::replace_bits(mask, val);
-            }
+                inline static void set_int1_sense_mode(ExternalInterruptMode mode) {
+                    uint8_t val = static_cast<uint8_t>(mode) << 2;
+                    uint8_t mask = build_bitmask(ISC10, ISC11);
+                    ExternalControlRegisterA::replace_bits(mask, val);
+                }
 
-            inline static void enable_int0() {
-                ExternalMaskRegister::set_bit(INT0);
-            }
+                inline static void enable_int0() {
+                    ExternalMaskRegister::set_bit(INT0);
+                }
 
-            inline static void disable_int0() {
-                ExternalMaskRegister::clear_bit(INT0);
-            }
+                inline static void disable_int0() {
+                    ExternalMaskRegister::clear_bit(INT0);
+                }
 
-            inline static void enable_int1() {
-                ExternalMaskRegister::set_bit(INT1);
-            }
+                inline static void enable_int1() {
+                    ExternalMaskRegister::set_bit(INT1);
+                }
 
-            inline static void disable_int1() {
+                inline static void disable_int1() {
                 ExternalMaskRegister::clear_bit(INT1);
             }
         };
