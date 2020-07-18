@@ -18,6 +18,122 @@
 #include "common.h"
 
 namespace Peripherals {
+
+    namespace MCU {
+        enum class SleepMode {
+            Idle                = 0b0000,
+            ADCNoiseReduciton   = 0b0010,
+            PowerDown           = 0b0100,
+            PowerSave           = 0b0110,
+            Standby             = 0b1100,
+            ExtendedStandby     = 0b1110,
+        };
+
+        class Power {
+            public:
+                using SleepControl = IOReg<uint8_t, 0x33 + __SFR_OFFSET>; // SMCR
+                using GeneralControl = IOReg<uint8_t, 0x35 + __SFR_OFFSET>; //MCUCR
+                using PowerReduction = IOReg<uint8_t, 0x64>; // PRR
+
+                inline static void disable_twi() {
+                    PowerReduction::set_bit(PRTWI);
+                }
+
+                inline static void enable_twi() {
+                    PowerReduction::clear_bit(PRTWI);
+                }
+
+                inline static void disable_timer0() {
+                    PowerReduction::set_bit(PRTIM0);
+                }
+
+                inline static void enable_timer0() {
+                    PowerReduction::clear_bit(PRTIM0);
+                }
+
+                inline static void disable_timer1() {
+                    PowerReduction::set_bit(PRTIM1);
+                }
+
+                inline static void enable_timer1() {
+                    PowerReduction::clear_bit(PRTIM1);
+                }
+
+                inline static void disable_timer2() {
+                    PowerReduction::set_bit(PRTIM2);
+                }
+
+                inline static void enable_timer2() {
+                    PowerReduction::clear_bit(PRTIM2);
+                }
+
+                inline static void disable_spi() {
+                    PowerReduction::set_bit(PRSPI);
+                }
+
+                inline static void enable_spi() {
+                    PowerReduction::clear_bit(PRSPI);
+                }
+                
+                inline static void disable_usart() {
+                    PowerReduction::set_bit(PRUSART0);
+                }
+
+                inline static void enable_usart() {
+                    PowerReduction::clear_bit(PRUSART0);
+                }
+
+                inline static void disable_adc() {
+                    PowerReduction::set_bit(PRADC);
+                }
+
+                inline static void enable_adc() {
+                    PowerReduction::clear_bit(PRADC);
+                }
+
+                inline static void set_sleep_mode(SleepMode mode) {
+                    uint8_t val = static_cast<uint8_t>(mode);
+                    uint8_t mask = build_bitmask(SM2, SM1, SM0);
+                    SleepControl::replace_bits(mask, val);
+                }
+
+                inline static void enable_sleep_bit() {
+                    SleepControl::set_bit(SE);
+                }
+
+                inline static void disable_sleep_bit() {
+                    SleepControl::clear_bit(SE);
+                }
+
+                inline static void sleep() {
+                    enable_sleep_bit();
+                    __asm__ volatile ("sleep");
+                    disable_sleep_bit();
+                }
+
+                inline static void move_interrupt_table_to_flash_start() {
+                    // Both writes need to be done within 4 cycles.
+                    uint8_t val = GeneralControl::get_value();
+                    GeneralControl::set_value(val | (1 << IVCE));
+                    GeneralControl::set_value(val & ~(1 << IVSEL));
+                }
+
+                inline static void move_interrupt_table_to_boot_flash() {
+                    // Both writes need to be done within 4 cycles.
+                    uint8_t val = GeneralControl::get_value();
+                    GeneralControl::set_value(val | (1 << IVCE));
+                    GeneralControl::set_value(val | (1 << IVSEL));
+                }
+
+                inline static void enable_pullups() {
+                    GeneralControl::clear_bit(PUD);
+                }
+
+                inline static void disable_pullups() {
+                GeneralControl::set_bit(PUD);
+            }
+        };
+    }
     
     namespace Interrupts {
         enum class ExternalInterruptMode {
